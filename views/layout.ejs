@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> - Football Stream</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .gradient-bg { background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+    .live-pulse { animation: pulse 2s infinite; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+  </style>
+</head>
+<body class="gradient-bg min-h-screen text-white">
+  <%- body %>
+  
+  <footer class="bg-slate-900/50 py-8 mt-12">
+    <div class="max-w-6xl mx-auto px-4 text-center text-slate-400">
+      <p>⚽ Football Stream - Watch UCL, World Cup, Premier League & More</p>
+      <p class="text-sm mt-2">All streams are aggregated from public sources. We don't host any content.</p>
+    </div>
+  </footer>
+</body>
+</html>

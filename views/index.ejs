@@ -1,0 +1,108 @@
+<%- include('layout', { body: `
+  <!-- Header -->
+  <header class="bg-slate-900/80 backdrop-blur-sm sticky top-0 z-50 border-b border-slate-700">
+    <div class="max-w-6xl mx-auto px-4 py-4">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center shadow-lg">
+            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10 2a8 8 0 100 16 8 8 0 000-16zM8 12a1 1 0 112 0v2a1 1 0 11-2 0v-2zm1-5a1 1 0 011 1v2a1 1 0 11-2 0V8a1 1 0 011-1z"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-xl font-bold">Football Stream ⚽</h1>
+            <p class="text-xs text-slate-400">Free Live Football Streaming</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- League Tabs -->
+  <nav class="bg-slate-800/50 border-b border-slate-700">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="flex gap-2 overflow-x-auto py-3">
+        <a href="/" class="px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap ${currentLeague === 'all' ? 'bg-green-500 text-white' : 'bg-slate-700 hover:bg-slate-600'}">All Matches</a>
+        <a href="/league/live" class="px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap ${currentLeague === 'live' ? 'bg-red-500 text-white' : 'bg-slate-700 hover:bg-slate-600'} ${liveMatches.length > 0 ? 'live-pulse' : ''}">🔴 LIVE</a>
+        <a href="/league/UCL" class="px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap ${currentLeague === 'UCL' ? 'bg-blue-500 text-white' : 'bg-slate-700 hover:bg-slate-600'}">🏆 UCL</a>
+        <a href="/league/Premier League" class="px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap ${currentLeague === 'Premier League' ? 'bg-purple-500 text-white' : 'bg-slate-700 hover:bg-slate-600'}">Premier League</a>
+        <a href="/league/La Liga" class="px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap ${currentLeague === 'La Liga' ? 'bg-red-600 text-white' : 'bg-slate-700 hover:bg-slate-600'}">La Liga</a>
+        <a href="/league/Serie A" class="px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap ${currentLeague === 'Serie A' ? 'bg-blue-400 text-white' : 'bg-slate-700 hover:bg-slate-600'}">Serie A</a>
+        <a href="/league/Bundesliga" class="px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap ${currentLeague === 'Bundesliga' ? 'bg-yellow-500 text-white' : 'bg-slate-700 hover:bg-slate-600'}">Bundesliga</a>
+        <a href="/league/World Cup" class="px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap ${currentLeague === 'World Cup' ? 'bg-green-600 text-white' : 'bg-slate-700 hover:bg-slate-600'}">🌍 World Cup</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="max-w-6xl mx-auto px-4 py-8">
+    <!-- Live Matches Section -->
+    ${liveMatches.length > 0 ? \`
+      <section class="mb-8">
+        <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+          <span class="text-red-500">🔴</span> Live Now
+        </h2>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          ${liveMatches.map(match => \`
+            <div class="bg-slate-800 rounded-xl p-4 card-hover transition-all duration-300 border border-slate-700">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-xs text-slate-400">\${match.league}</span>
+                <span class="text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded-full font-medium">LIVE</span>
+              </div>
+              <div class="flex items-center justify-between mb-4">
+                <div class="text-center flex-1">
+                  <p class="font-semibold text-sm">\${match.home_team}</p>
+                </div>
+                <div class="px-3 py-1 bg-slate-700 rounded-lg text-xs font-mono">vs</div>
+                <div class="text-center flex-1">
+                  <p class="font-semibold text-sm">\${match.away_team}</p>
+                </div>
+              </div>
+              <a href="/match/\${match.id}" class="block w-full bg-green-500 hover:bg-green-600 text-white text-center py-2 rounded-lg font-medium transition-colors">
+                Watch Stream →
+              </a>
+            </div>
+          \`).join('')}
+        </div>
+      </section>
+    \` : ''}
+
+    <!-- Upcoming Matches -->
+    <section>
+      <h2 class="text-2xl font-bold mb-4">
+        ${currentLeague === 'all' ? 'Upcoming Matches' : currentLeague === 'live' ? 'No Live Matches' : `Upcoming ${currentLeague} Matches`}
+      </h2>
+      
+      ${matches.length === 0 ? \`
+        <div class="text-center py-12 text-slate-400">
+          <p class="text-lg">No matches found</p>
+          <p class="text-sm mt-2">Check back later for upcoming fixtures</p>
+        </div>
+      \` : \`
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          ${matches.map(match => \`
+            <div class="bg-slate-800 rounded-xl p-4 card-hover transition-all duration-300 border border-slate-700">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-xs text-slate-400">\${match.league}</span>
+                <span class="text-xs text-slate-500">\${new Date(match.match_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+              </div>
+              <div class="flex items-center justify-between mb-4">
+                <div class="text-center flex-1">
+                  <p class="font-semibold text-sm">\${match.home_team}</p>
+                </div>
+                <div class="px-3 py-1 bg-slate-700 rounded-lg text-xs font-mono">vs</div>
+                <div class="text-center flex-1">
+                  <p class="font-semibold text-sm">\${match.away_team}</p>
+                </div>
+              </div>
+              <div class="text-xs text-slate-500 mb-3 text-center">\${match.stadium || 'TBA'}</div>
+              <a href="/match/\${match.id}" class="block w-full bg-blue-500 hover:bg-blue-600 text-white text-center py-2 rounded-lg font-medium transition-colors">
+                View Streams →
+              </a>
+            </div>
+          \`).join('')}
+        </div>
+      \`}
+    </section>
+  </main>
+` }) %>

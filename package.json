@@ -1,0 +1,21 @@
+{
+  "name": "football-stream",
+  "version": "1.0.0",
+  "description": "Free football streaming aggregator - UCL, World Cup, Premier League & more",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "db:init": "node scripts/init-db.js"
+  },
+  "dependencies": {
+    "express": "^4.22.2",
+    "ejs": "^3.1.10",
+    "better-sqlite3": "^11.8.1",
+    "node-fetch": "^2.7.0",
+    "express-rate-limit": "^7.5.1"
+  },
+  "keywords": ["football", "streaming", "soccer", "UCL", "Premier League"],
+  "author": "Tiar",
+  "license": "MIT"
+}
