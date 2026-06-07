@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const Database = require('./services/database');
+const statsRouter = require('./routes/stats');
 
 const app = express();
 const PORT = process.env.PORT || 8084;
@@ -103,6 +104,9 @@ app.get('/api/matches', (req, res) => {
   }
 });
 
+// Stats dashboard
+app.use('/stats', statsRouter);
+
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -114,5 +118,6 @@ Database.init();
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Football Stream running on port ${PORT}`);
   console.log(`📺 Live + Upcoming (7 days)`);
+  console.log(`📊 Stats: http://localhost:${PORT}/stats`);
   console.log(`🔗 http://localhost:${PORT}`);
 });

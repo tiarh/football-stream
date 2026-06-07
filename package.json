@@ -6,7 +6,12 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
-    "db:init": "node scripts/init-db.js"
+    "db:init": "node scripts/init-db.js",
+    "fetch": "node scripts/fetch-real-fixtures.js",
+    "docker:build": "docker build -t football-stream .",
+    "docker:run": "docker-compose up -d",
+    "docker:stop": "docker-compose down",
+    "test": "echo \"Tests coming soon\" && exit 0"
   },
   "dependencies": {
     "better-sqlite3": "^11.8.1",

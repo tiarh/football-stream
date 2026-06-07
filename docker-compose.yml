@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  football-stream:
+    build: .
+    container_name: football-stream
+    restart: unless-stopped
+    ports:
+      - "8084:8084"
+    volumes:
+      - football-data:/app/data
+    environment:
+      - NODE_ENV=production
+      - PORT=8084
+      - DATABASE_PATH=/app/data/football.db
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8084/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks:
+      - football-network
+
+volumes:
+  football-data:
+    driver: local
+
+networks:
+  football-network:
+    driver: bridge

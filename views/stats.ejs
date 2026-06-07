@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Statistics - Football Stream</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="/css/style.css" rel="stylesheet">
+</head>
+<body class="gradient-bg min-h-screen text-white">
+  <!-- Header -->
+  <header class="border-b border-slate-700/50 bg-slate-900/50 backdrop-blur-sm sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <a href="/" class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">⚽ Football Stream</a>
+        <nav class="flex gap-6">
+          <a href="/" class="text-slate-400 hover:text-white transition-colors">Home</a>
+          <a href="/stats" class="text-blue-400 font-medium">Stats</a>
+          <a href="https://github.com/tiarh/football-stream" target="_blank" class="text-slate-400 hover:text-white transition-colors">GitHub</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Page Title -->
+    <div class="mb-8">
+      <h1 class="text-4xl font-bold mb-2">📊 Project Statistics</h1>
+      <p class="text-slate-400">Real-time metrics from Football Stream</p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="stats-card">
+        <div class="stats-number"><%= stats.totalMatches %></div>
+        <div class="stats-label">Total Matches</div>
+      </div>
+      
+      <div class="stats-card">
+        <div class="stats-number text-green-400"><%= stats.liveMatches %></div>
+        <div class="stats-label">Live Now</div>
+      </div>
+      
+      <div class="stats-card">
+        <div class="stats-number text-blue-400"><%= stats.totalStreams %></div>
+        <div class="stats-label">Total Streams</div>
+      </div>
+      
+      <div class="stats-card">
+        <div class="stats-number text-purple-400"><%= stats.reliability %>%</div>
+        <div class="stats-label">Stream Reliability</div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Recent Matches -->
+      <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700">
+        <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+          <span>📅</span> Recent Matches
+        </h2>
+        
+        <% if (recentMatches && recentMatches.length > 0) { %>
+          <div class="space-y-3">
+            <% recentMatches.forEach(match => { %>
+              <a href="/match/<%= match.id %>" class="block p-3 bg-slate-700/50 rounded-lg hover:bg-slate-700 transition-colors">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="font-medium"><%= match.home_team %> vs <%= match.away_team %></div>
+                    <div class="text-xs text-slate-400 mt-1">
+                      <%= match.league %> • <%= new Date(match.match_date).toLocaleDateString() %>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <% if (match.status === 'live') { %>
+                      <span class="badge badge-live">🔴 LIVE</span>
+                    <% } else { %>
+                      <span class="badge badge-scheduled">Upcoming</span>
+                    <% } %>
+                    <div class="text-xs text-slate-400 mt-1"><%= match.stream_count %> streams</div>
+                  </div>
+                </div>
+              </a>
+            <% }); %>
+          </div>
+        <% } else { %>
+          <p class="text-slate-400 text-center py-8">No matches yet</p>
+        <% } %>
+      </div>
+
+      <!-- Top Streams -->
+      <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700">
+        <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+          <span>🏆</span> Top Rated Streams
+        </h2>
+        
+        <% if (topStreams && topStreams.length > 0) { %>
+          <div class="space-y-3">
+            <% topStreams.forEach(stream => { %>
+              <div class="p-3 bg-slate-700/50 rounded-lg">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="font-medium"><%= stream.source_name %></div>
+                    <div class="text-xs text-slate-400 mt-1">
+                      <%= stream.home_team %> vs <%= stream.away_team %>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-green-400 text-sm font-medium">👍 <%= stream.votes %></span>
+                    <span class="quality-badge quality-<%= stream.quality.toLowerCase() %>"><%= stream.quality %></span>
+                  </div>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        <% } else { %>
+          <p class="text-slate-400 text-center py-8">No streams yet</p>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- League Distribution -->
+    <% if (leagueStats && leagueStats.length > 0) { %>
+      <div class="mt-6 bg-slate-800/50 rounded-xl p-6 border border-slate-700">
+        <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+          <span>🏆</span> League Distribution
+        </h2>
+        
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <% leagueStats.forEach(league => { %>
+            <div class="text-center p-4 bg-slate-700/50 rounded-lg">
+              <div class="text-2xl font-bold text-blue-400"><%= league.match_count %></div>
+              <div class="text-xs text-slate-400 mt-1"><%= league.league %></div>
+            </div>
+          <% }); %>
+        </div>
+      </div>
+    <% } %>
+
+    <!-- API Info -->
+    <div class="mt-6 bg-blue-900/20 rounded-xl p-6 border border-blue-700/50">
+      <h2 class="text-xl font-bold mb-2">🔌 API Access</h2>
+      <p class="text-slate-300 mb-4">Use our public API to integrate Football Stream into your projects</p>
+      <code class="block bg-slate-900 rounded-lg p-4 text-sm font-mono text-green-400 overflow-x-auto">
+        GET https://your-domain.com/stats/api
+      </code>
+      <div class="mt-4">
+        <a href="/stats/api" target="_blank" class="btn btn-primary">
+          Try API →
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-700/50 bg-slate-900/50 mt-12">
+    <div class="max-w-7xl mx-auto px-4 py-6 text-center text-slate-400 text-sm">
+      <p>⚽ Football Stream - Real fixtures only</p>
+      <p class="mt-1">Built with ❤️ by <a href="https://github.com/tiarh" target="_blank" class="text-blue-400 hover:underline">@tiarh</a></p>
+      <p class="mt-2">
+        <a href="https://github.com/tiarh/football-stream" target="_blank" class="text-blue-400 hover:underline">GitHub</a> •
+        <a href="/health" target="_blank" class="text-blue-400 hover:underline">Health Check</a>
+      </p>
+    </div>
+  </footer>
+
+  <script src="/js/countdown.js"></script>
+</body>
+</html>
