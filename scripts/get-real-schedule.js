@@ -70,7 +70,7 @@ async function getRealFixtures() {
   
   const fixtures = [];
   
-  // Try API-Football (most reliable)
+  // 1. Try API-Football (most reliable)
   try {
     const apiKey = process.env.FOOTBALL_API_KEY;
     if (apiKey) {
@@ -102,31 +102,40 @@ async function getRealFixtures() {
     console.log(`✗ API-Football failed: ${err.message}\n`);
   }
   
-  // If no fixtures found, check if today is a match day
-  // Most leagues play on weekends (Sat/Sun) and some midweek (Tue/Wed)
-  const todayDay = getDayName();
-  const isMatchDay = ['Saturday', 'Sunday', 'Tuesday', 'Wednesday'].includes(todayDay);
-  
-  if (fixtures.length === 0 && !isMatchDay) {
-    console.log(`ℹ️ Today is ${todayDay} - typically no major fixtures`);
-    console.log('💡 Clearing old live matches from database...\n');
-    
-    // Clear old "live" matches that are no longer valid
-    Database.prepare(`
-      UPDATE matches SET status = 'finished' 
-      WHERE status = 'live' AND match_date < datetime('now', '-3 hours')
-    `).run();
-    
-    return [];
+  // 2. Try manual fixtures from JSON file
+  if (fixtures.length === 0) {
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      const fixturesFile = path.join(__dirname, 'today-fixtures.json');
+      
+      if (fs.existsSync(fixturesFile)) {
+        const data = JSON.parse(fs.readFileSync(fixturesFile, 'utf8'));
+        const todayFixtures = data[today];
+        
+        if (todayFixtures && todayFixtures.fixtures && todayFixtures.fixtures.length > 0) {
+          console.log(`✓ Found ${todayFixtures.fixtures.length} manual fixtures for today\n`);
+          fixtures.push(...todayFixtures.fixtures);
+        } else {
+          console.log(`ℹ️ No manual fixtures for ${today}\n`);
+        }
+      }
+    } catch (err) {
+      console.log(`✗ Failed to load manual fixtures: ${err.message}\n`);
+    }
   }
   
-  // Fallback: Use pre-configured fixtures for major match days
-  // Only use if we're on a weekend and API failed
-  if (fixtures.length === 0 && isMatchDay) {
-    console.log('⚠️ No API data available - using manual fixture list');
-    console.log('💡 Add real fixtures to FALLBACK_FIXTURES in script\n');
+  // 3. If still no fixtures, clear old live matches
+  if (fixtures.length === 0) {
+    console.log('ℹ️ No fixtures today - clearing old live matches');
+    console.log('💡 Add fixtures to today-fixtures.json or get API key\n');
     
-    // For now, return empty - better to show no matches than fake ones!
+    // Clear ALL old live matches
+    Database.prepare(`
+      UPDATE matches SET status = 'finished' 
+      WHERE status = 'live'
+    `).run();
+    
     return [];
   }
   

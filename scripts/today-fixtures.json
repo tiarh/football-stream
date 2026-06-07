@@ -1,0 +1,22 @@
+{
+  "2026-06-07": {
+    "note": "Sunday - typically Premier League / La Liga matchday",
+    "fixtures": []
+  },
+  "2026-06-08": {
+    "note": "Monday - typically no major fixtures",
+    "fixtures": []
+  },
+  "TEMPLATE": {
+    "note": "Copy this template for match days",
+    "fixtures": [
+      {
+        "home_team": "Team A",
+        "away_team": "Team B",
+        "league": "Premier League",
+        "match_time": "2026-06-14T14:00:00Z",
+        "status": "scheduled"
+      }
+    ]
+  }
+}
