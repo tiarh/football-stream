@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const rateLimit = require('express-rate-limit');
+const { exec } = require('child_process');
 const Database = require('./services/database');
 const app = express();
 const PORT = process.env.PORT || 8084;
@@ -59,7 +60,29 @@ app.get('/api/matches', async (req, res) => {
   }
 });
 
-// Health check
+// Scrape Yalla Shoot endpoint
+app.get('/api/scrape', (req, res) => {
+  console.log('🔍 Triggering Yalla Shoot scraper...');
+  
+  exec('python3 /root/football-stream/scripts/yalla-scraper.py', (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Scraper error: ${error.message}`);
+      return res.status(500).json({ 
+        success: false, 
+        error: error.message,
+        output: stdout 
+      });
+    }
+    
+    console.log(`Scraper output:\n${stdout}`);
+    res.json({ 
+      success: true, 
+      message: 'Scraper completed',
+      output: stdout 
+    });
+  });
+});
+
 app.post('/api/vote', (req, res) => {
   try {
     const { streamId, voteType } = req.body;
@@ -86,6 +109,18 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Auto-scrape on startup (run in background)
+setTimeout(() => {
+  console.log('🚀 Running auto-scrape on startup...');
+  exec('python3 /root/football-stream/scripts/yalla-scraper.py', (error, stdout) => {
+    if (error) {
+      console.log(`Auto-scrape completed with errors: ${error.message}`);
+    } else {
+      console.log(`Auto-scrape completed:\n${stdout}`);
+    }
+  });
+}, 5000);
+
 // Start server
 app.listen(PORT, () => {
   console.log(`
@@ -94,6 +129,7 @@ app.listen(PORT, () => {
 ╠═══════════════════════════════════════════════════╣
 ║  Local:    http://localhost:${PORT}                 
 ║  Health:   http://localhost:${PORT}/health          
+║  Scrape:   http://localhost:${PORT}/api/scrape      
 ╚═══════════════════════════════════════════════════╝
   `);
 });
