@@ -8,14 +8,14 @@ import requests
 from bs4 import BeautifulSoup
 import sqlite3
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 
 # Yalla Shoot domains (rotate if blocked)
 DOMAINS = [
     'https://www.yallashoot360.com',
-    'https://www.yallashoot7.com',
-    'https://www.yallashoot9.com',
+    'https://www.yallashoot.live',
+    'https://www.yallashoot.today',
 ]
 
 HEADERS = {
@@ -28,35 +28,46 @@ def get_working_domain():
     """Find a working Yalla Shoot domain"""
     for domain in DOMAINS:
         try:
-            res = requests.get(domain, headers=HEADERS, timeout=10)
+            res = requests.get(domain, headers=HEADERS, timeout=10, allow_redirects=True)
             if res.status_code == 200:
                 print(f"✓ Using domain: {domain}")
                 return domain
-        except:
+        except Exception as e:
+            print(f"✗ {domain}: {e}")
             continue
     return None
 
-def extract_stream_url(html):
+def extract_stream_url(html, match_url=''):
     """Extract direct HLS stream URL from page HTML"""
-    # Look for .m3u8 URLs
-    m3u8_pattern = r'(https?://[^\s\'"]+\.m3u8[^\s\'"]*)'
-    matches = re.findall(m3u8_pattern, html)
+    # Look for .m3u8 URLs in various patterns
+    patterns = [
+        r'(https?://[^\s\'"]+\.m3u8[^\s\'"]*)',
+        r'source:\s*["\']([^"\']+\.m3u8[^"\']*)["\']',
+        r'file:\s*["\']([^"\']+\.m3u8[^"\']*)["\']',
+        r'data-stream=["\']([^"\']+\.m3u8[^"\']*)["\']',
+    ]
     
-    if matches:
-        # Return first working m3u8
-        for url in matches:
-            # Clean URL
-            url = url.replace('\\', '').replace('"', '').replace("'", '')
-            if 'm3u8' in url and 'http' in url:
-                return url
+    for pattern in patterns:
+        matches = re.findall(pattern, html, re.IGNORECASE)
+        if matches:
+            for url in matches:
+                url = url.replace('\\', '').replace('"', '').replace("'", '').strip()
+                if url.startswith('http') and 'm3u8' in url:
+                    print(f"  Found stream: {url[:80]}...")
+                    return url
     
-    # Look for iframe sources
-    iframe_pattern = r'<iframe[^>]+src=["\']([^"\']+)["\']'
-    iframes = re.findall(iframe_pattern, html, re.IGNORECASE)
-    
-    for iframe in iframes:
-        if 'm3u8' in iframe or 'embed' in iframe:
-            return iframe
+    # Look for iframe with stream
+    iframe_matches = re.findall(r'<iframe[^>]+src=["\']([^"\']+)["\']', html, re.IGNORECASE)
+    for iframe in iframe_matches:
+        if 'embed' in iframe or 'stream' in iframe:
+            # Fetch iframe content
+            try:
+                iframe_res = requests.get(iframe, headers=HEADERS, timeout=10)
+                iframe_stream = extract_stream_url(iframe_res.text, iframe)
+                if iframe_stream:
+                    return iframe_stream
+            except:
+                pass
     
     return None
 
@@ -65,75 +76,124 @@ def scrape_matches(base_url):
     matches = []
     
     try:
-        # Get homepage (today's matches)
-        res = requests.get(base_url, headers=HEADERS, timeout=15)
+        res = requests.get(base_url, headers=HEADERS, timeout=15, allow_redirects=True)
         soup = BeautifulSoup(res.text, 'html.parser')
         
-        # Find match cards (adjust selectors based on actual site structure)
-        match_cards = soup.find_all('a', href=re.compile(r'/match/\d+|/watch/'))
+        # Try to find match links (various selectors)
+        match_links = []
         
-        print(f"Found {len(match_cards)} match cards")
+        # Look for match cards/links
+        for tag in ['a', 'div']:
+            elements = soup.find_all(tag, href=re.compile(r'watch|match|live|game', re.IGNORECASE))
+            for elem in elements:
+                href = elem.get('href', '')
+                if href and href not in match_links:
+                    match_links.append(href)
         
-        for card in match_cards[:10]:  # Limit to 10 matches
+        # Also look in specific containers
+        containers = soup.find_all(class_=re.compile(r'match|game|live|event', re.IGNORECASE))
+        for container in containers:
+            links = container.find_all('a', href=True)
+            for link in links:
+                href = link.get('href', '')
+                if href and href not in match_links:
+                    match_links.append(href)
+        
+        print(f"Found {len(match_links)} potential match links")
+        
+        # Process each match link
+        for link_href in match_links[:15]:  # Limit to 15 matches
             try:
-                match_url = card.get('href', '')
-                if not match_url.startswith('http'):
-                    match_url = base_url + match_url
+                if not link_href.startswith('http'):
+                    if link_href.startswith('/'):
+                        match_url = base_url + link_href
+                    else:
+                        match_url = base_url + '/' + link_href
+                else:
+                    match_url = link_href
                 
-                # Get match details
+                # Fetch match page
                 match_res = requests.get(match_url, headers=HEADERS, timeout=10)
                 match_soup = BeautifulSoup(match_res.text, 'html.parser')
                 
-                # Extract teams
+                # Extract teams (try multiple selectors)
                 home_team = None
                 away_team = None
                 
-                # Try different selectors
-                for cls in ['team-home', 'home-team', 'team1', 'hometeam']:
-                    elem = match_soup.find(class_=cls)
+                # Method 1: Look for team names in specific classes
+                for home_cls in ['home', 'team-home', 'team1', 'home-team']:
+                    elem = match_soup.find(class_=re.compile(home_cls, re.IGNORECASE))
                     if elem:
                         home_team = elem.get_text(strip=True)
                         break
                 
-                for cls in ['team-away', 'away-team', 'team2', 'awayteam']:
-                    elem = match_soup.find(class_=cls)
+                for away_cls in ['away', 'team-away', 'team2', 'away-team']:
+                    elem = match_soup.find(class_=re.compile(away_cls, re.IGNORECASE))
                     if elem:
                         away_team = elem.get_text(strip=True)
                         break
                 
-                # Fallback: try to extract from title
+                # Method 2: Look in title
                 if not home_team or not away_team:
                     title = match_soup.find('title')
                     if title:
                         title_text = title.get_text(strip=True)
-                        if 'vs' in title_text.lower():
+                        if ' vs ' in title_text:
                             parts = title_text.split(' vs ')
-                            if len(parts) == 2:
+                            if len(parts) >= 2:
+                                home_team = parts[0].strip()
+                                away_team = parts[1].split(' - ')[0].split('|')[0].strip()
+                
+                # Method 3: Look for h1/h2 tags with team names
+                if not home_team or not away_team:
+                    for header in match_soup.find_all(['h1', 'h2']):
+                        text = header.get_text(strip=True)
+                        if ' vs ' in text:
+                            parts = text.split(' vs ')
+                            if len(parts) >= 2:
                                 home_team = parts[0].strip()
                                 away_team = parts[1].split(' - ')[0].strip()
+                                break
                 
                 if not home_team or not away_team:
                     continue
                 
                 # Extract stream URL
-                stream_url = extract_stream_url(match_res.text)
+                stream_url = extract_stream_url(match_res.text, match_url)
                 
                 if stream_url:
+                    # Determine league from context
+                    league = 'Live Football'
+                    league_keywords = {
+                        'premier league': 'Premier League',
+                        'la liga': 'La Liga',
+                        'serie a': 'Serie A',
+                        'bundesliga': 'Bundesliga',
+                        'ucl': 'UCL',
+                        'champions league': 'UCL',
+                        'world cup': 'World Cup',
+                    }
+                    for keyword, league_name in league_keywords.items():
+                        if keyword in match_res.text.lower():
+                            league = league_name
+                            break
+                    
                     matches.append({
                         'home_team': home_team,
                         'away_team': away_team,
                         'stream_url': stream_url,
                         'match_url': match_url,
-                        'league': 'Live',
+                        'league': league,
                         'quality': 'HD',
-                        'language': 'AR/EN'
+                        'language': 'AR/EN',
+                        'status': 'live'
                     })
                     print(f"✓ {home_team} vs {away_team} - Stream found")
                 else:
                     print(f"✗ {home_team} vs {away_team} - No stream URL")
                     
             except Exception as e:
-                print(f"Error processing card: {e}")
+                print(f"  Error: {e}")
                 continue
                 
     except Exception as e:
@@ -160,7 +220,13 @@ def update_database(matches):
         
         if row:
             match_id = row[0]
-            print(f"→ Updating existing match: {match['home_team']} vs {match['away_team']}")
+            print(f"→ Updating: {match['home_team']} vs {match['away_team']}")
+            
+            # Update match status to live
+            cursor.execute('''
+                UPDATE matches SET status = 'live', match_date = ?
+                WHERE id = ?
+            ''', (datetime.now().isoformat(), match_id))
             
             # Delete old streams
             cursor.execute('DELETE FROM streams WHERE match_id = ?', (match_id,))
@@ -177,7 +243,7 @@ def update_database(matches):
                 'live'
             ))
             match_id = cursor.lastrowid
-            print(f"→ Added new match: {match['home_team']} vs {match['away_team']}")
+            print(f"→ Added: {match['home_team']} vs {match['away_team']}")
         
         # Insert stream
         cursor.execute('''
@@ -210,8 +276,7 @@ def main():
     
     if not matches:
         print("\n⚠️ No matches found with stream URLs")
-        print("💡 Trying alternative approach...")
-        # Fallback: use pre-configured streams
+        print("💡 You can manually add streams via /api/scrape endpoint")
         return 1
     
     # Update database
