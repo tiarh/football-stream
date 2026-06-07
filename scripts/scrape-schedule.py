@@ -29,45 +29,42 @@ def scrape_bbc_football():
         
         fixtures = []
         
-        # Find match cards
-        match_cards = soup.find_all('div', class_=re.compile(r'match|fixture|event', re.IGNORECASE))
-        
-        for card in match_cards[:20]:  # Limit 20 matches
+        # Look for match containers with better selectors
+        for article in soup.find_all('article')[:30]:
             try:
-                # Extract teams
-                home_elem = card.find(class_=re.compile(r'home|team-home', re.IGNORECASE))
-                away_elem = card.find(class_=re.compile(r'away|team-away', re.IGNORECASE))
+                # Find team names in spans or divs with specific patterns
+                teams = []
+                for elem in article.find_all(['span', 'div']):
+                    text = elem.get_text(strip=True)
+                    # Filter valid team names (not numbers, not too short)
+                    if text and len(text) > 3 and not text.isdigit():
+                        # Common football team keywords
+                        if any(kw in text.lower() for kw in ['united', 'city', 'fc', 'real', 'barcelona', 'liverpool', 'chelsea', 'arsenal', 'madrid', 'bayern', 'milan', 'inter', 'juventus', 'psg', 'dortmund', 'atletico', 'sevilla', 'napoli', 'roma', 'lazio', 'fiorentina', 'ajax', 'benfica', 'porto', 'sporting', 'celtic', 'rangers', 'galatasaray', 'fenerbahce', 'besiktas']):
+                            if text not in teams:
+                                teams.append(text)
                 
-                if not home_elem or not away_elem:
-                    continue
-                
-                home_team = home_elem.get_text(strip=True)
-                away_team = away_elem.get_text(strip=True)
-                
-                # Extract time/status
-                time_elem = card.find(class_=re.compile(r'time|status|kickoff', re.IGNORECASE))
-                match_time = time_elem.get_text(strip=True) if time_elem else ''
-                
-                # Determine if live
-                status = 'scheduled'
-                if 'LIVE' in match_time.upper() or 'HT' in match_time.upper():
-                    status = 'live'
-                elif 'FT' in match_time.upper():
-                    status = 'finished'
-                
-                # Extract league/competition
-                comp_elem = card.find(class_=re.compile(r'competition|league', re.IGNORECASE))
-                league = comp_elem.get_text(strip=True) if comp_elem else 'Football'
-                
-                if home_team and away_team:
+                if len(teams) >= 2:
+                    home_team = teams[0]
+                    away_team = teams[1]
+                    
+                    # Check for live status
+                    status = 'scheduled'
+                    status_elem = article.find(string=re.compile(r'LIVE|HT|FT', re.IGNORECASE))
+                    if status_elem:
+                        text = status_elem.upper()
+                        if 'LIVE' in text or 'HT' in text:
+                            status = 'live'
+                        elif 'FT' in text:
+                            status = 'finished'
+                    
                     fixtures.append({
                         'home_team': home_team,
                         'away_team': away_team,
-                        'league': league,
-                        'match_time': match_time,
+                        'league': 'Football',
+                        'match_time': '',
                         'status': status,
                     })
-                    print(f"  ✓ {home_team} vs {away_team} ({league}) - {status}")
+                    print(f"  ✓ {home_team} vs {away_team} - {status}")
                     
             except Exception as e:
                 continue
