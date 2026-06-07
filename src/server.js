@@ -60,6 +60,28 @@ app.get('/api/matches', async (req, res) => {
 });
 
 // Health check
+app.post('/api/vote', (req, res) => {
+  try {
+    const { streamId, voteType } = req.body;
+    if (!streamId || !voteType) return res.status(400).json({ error: 'Invalid data' });
+    Database.voteStream(streamId, voteType);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/report', (req, res) => {
+  try {
+    const { streamId } = req.body;
+    if (!streamId) return res.status(400).json({ error: 'Invalid stream ID' });
+    Database.reportStream(streamId);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
