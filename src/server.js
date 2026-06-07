@@ -1,8 +1,7 @@
 const express = require('express');
 const path = require('path');
-const rateLimit = require('express-rate-limit');
-const { exec } = require('child_process');
 const Database = require('./services/database');
+
 const app = express();
 const PORT = process.env.PORT || 8084;
 
@@ -11,125 +10,109 @@ app.set('views', path.join(__dirname, '../views'));
 app.use(express.static(path.join(__dirname, '../public')));
 app.use(express.json());
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100
-});
-app.use(limiter);
-
-// Routes
-app.get('/', async (req, res) => {
+// Home - Live + Upcoming
+app.get('/', (req, res) => {
   try {
-    const matches = await Database.getUpcomingMatches();
-    const liveMatches = await Database.getLiveMatches();
-    res.render('index', { matches, liveMatches, currentLeague: 'all' });
+    const now = new Date();
+    const sevenDaysLater = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000));
+    
+    // Get LIVE matches (status = 'live')
+    const liveMatches = Database.getLiveMatches();
+    
+    // Get upcoming matches (next 7 days, not live)
+    const allUpcoming = Database.getUpcomingMatches();
+    const upcomingMatches = allUpcoming.filter(m => {
+      const matchDate = new Date(m.match_date);
+      return matchDate > now && matchDate <= sevenDaysLater && m.status !== 'live';
+    });
+    
+    // Check streams for each upcoming match
+    upcomingMatches.forEach(match => {
+      const streams = Database.getStreamsByMatchId(match.id);
+      match.streams = streams;
+    });
+    
+    res.render('index', {
+      liveMatches,
+      upcomingMatches,
+      pageTitle: 'Football Stream'
+    });
   } catch (err) {
-    res.render('index', { matches: [], liveMatches: [], currentLeague: 'all' });
+    console.error('Home error:', err);
+    res.status(500).render('index', {
+      liveMatches: [],
+      upcomingMatches: [],
+      pageTitle: 'Football Stream',
+      error: 'Failed to load matches'
+    });
   }
 });
 
-app.get('/league/:league', async (req, res) => {
+// Match detail
+app.get('/match/:id', (req, res) => {
   try {
-    const { league } = req.params;
-    const matches = await Database.getMatchesByLeague(league);
-    const liveMatches = league === 'live' ? await Database.getLiveMatches() : [];
-    res.render('index', { matches, liveMatches, currentLeague: league });
-  } catch (err) {
-    res.render('index', { matches: [], liveMatches: [], currentLeague: req.params.league });
-  }
-});
-
-app.get('/match/:id', async (req, res) => {
-  try {
-    const match = await Database.getMatchById(req.params.id);
-    if (!match) return res.status(404).send('Match not found');
-    const streams = await Database.getStreamsByMatch(req.params.id);
-    res.render('match', { match, streams });
-  } catch (err) {
-    res.status(500).send('Error loading match');
-  }
-});
-
-app.get('/api/matches', async (req, res) => {
-  try {
-    const matches = await Database.getUpcomingMatches();
-    res.json({ success: true, matches });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-// Scrape Yalla Shoot endpoint
-app.get('/api/scrape', (req, res) => {
-  console.log('🔍 Triggering Yalla Shoot scraper...');
-  
-  exec('python3 /root/football-stream/scripts/yalla-scraper.py', (error, stdout, stderr) => {
-    if (error) {
-      console.error(`Scraper error: ${error.message}`);
-      return res.status(500).json({ 
-        success: false, 
-        error: error.message,
-        output: stdout 
-      });
+    const matchId = parseInt(req.params.id);
+    const match = Database.getMatchById(matchId);
+    
+    if (!match) {
+      return res.status(404).send('Match not found');
     }
     
-    console.log(`Scraper output:\n${stdout}`);
-    res.json({ 
-      success: true, 
-      message: 'Scraper completed',
-      output: stdout 
-    });
-  });
+    const streams = Database.getStreamsByMatchId(matchId);
+    
+    res.render('match', { match, streams });
+  } catch (err) {
+    console.error('Match detail error:', err);
+    res.status(500).send('Server error');
+  }
 });
 
+// Vote stream
 app.post('/api/vote', (req, res) => {
   try {
-    const { streamId, voteType } = req.body;
-    if (!streamId || !voteType) return res.status(400).json({ error: 'Invalid data' });
-    Database.voteStream(streamId, voteType);
+    const { streamId, value } = req.body;
+    Database.voteStream(streamId, value);
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Vote error:', err);
+    res.status(500).json({ error: 'Failed to vote' });
   }
 });
 
+// Report stream
 app.post('/api/report', (req, res) => {
   try {
-    const { streamId } = req.body;
-    if (!streamId) return res.status(400).json({ error: 'Invalid stream ID' });
-    Database.reportStream(streamId);
+    const { streamId, reason } = req.body;
+    Database.reportStream(streamId, reason);
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Report error:', err);
+    res.status(500).json({ error: 'Failed to report' });
   }
 });
 
+// API: Get all matches (for testing)
+app.get('/api/matches', (req, res) => {
+  try {
+    const live = Database.getLiveMatches();
+    const upcoming = Database.getUpcomingMatches();
+    res.json({ live, upcoming, total: live.length + upcoming.length });
+  } catch (err) {
+    console.error('API matches error:', err);
+    res.status(500).json({ error: 'Failed to fetch matches' });
+  }
+});
+
+// Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Auto-scrape on startup (run in background)
-setTimeout(() => {
-  console.log('🚀 Running auto-scrape on startup...');
-  exec('python3 /root/football-stream/scripts/yalla-scraper.py', (error, stdout) => {
-    if (error) {
-      console.log(`Auto-scrape completed with errors: ${error.message}`);
-    } else {
-      console.log(`Auto-scrape completed:\n${stdout}`);
-    }
-  });
-}, 5000);
+// Initialize database
+Database.init();
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`
-╔═══════════════════════════════════════════════════╗
-║      Football Stream Server Started               ║
-╠═══════════════════════════════════════════════════╣
-║  Local:    http://localhost:${PORT}                 
-║  Health:   http://localhost:${PORT}/health          
-║  Scrape:   http://localhost:${PORT}/api/scrape      
-╚═══════════════════════════════════════════════════╝
-  `);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Football Stream running on port ${PORT}`);
+  console.log(`📺 Live + Upcoming (7 days)`);
+  console.log(`🔗 http://localhost:${PORT}`);
 });

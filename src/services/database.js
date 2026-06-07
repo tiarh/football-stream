@@ -1,111 +1,103 @@
-const Database = require('better-sqlite3');
+const Database = require('better-sqlite3')('/root/football-stream/data/football.db');
+const fs = require('fs');
 const path = require('path');
 
-const db = new Database(path.join(__dirname, '../../data/football.db'));
+// Ensure data directory exists
+const dataDir = path.dirname('/root/football-stream/data/football.db');
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true });
+}
 
-// Initialize tables
-db.exec(`
-  CREATE TABLE IF NOT EXISTS matches (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    home_team TEXT NOT NULL,
-    away_team TEXT NOT NULL,
-    league TEXT NOT NULL,
-    match_date DATETIME NOT NULL,
-    stadium TEXT,
-    status TEXT DEFAULT 'scheduled',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  );
+function init() {
+  // Create matches table
+  Database.exec(`
+    CREATE TABLE IF NOT EXISTS matches (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      home_team TEXT NOT NULL,
+      away_team TEXT NOT NULL,
+      league TEXT NOT NULL,
+      match_date TEXT NOT NULL,
+      status TEXT DEFAULT 'scheduled',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
 
-  CREATE TABLE IF NOT EXISTS streams (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    match_id INTEGER NOT NULL,
-    source_name TEXT NOT NULL,
-    stream_url TEXT NOT NULL,
-    quality TEXT DEFAULT 'HD',
-    language TEXT DEFAULT 'EN',
-    is_working INTEGER DEFAULT 1,
-    votes_positive INTEGER DEFAULT 0,
-    votes_negative INTEGER DEFAULT 0,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (match_id) REFERENCES matches(id)
-  );
+  // Create streams table
+  Database.exec(`
+    CREATE TABLE IF NOT EXISTS streams (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      match_id INTEGER NOT NULL,
+      source_name TEXT NOT NULL,
+      stream_url TEXT NOT NULL,
+      quality TEXT DEFAULT 'HD',
+      language TEXT DEFAULT 'EN',
+      votes INTEGER DEFAULT 0,
+      reports INTEGER DEFAULT 0,
+      is_working INTEGER DEFAULT 1,
+      type TEXT DEFAULT 'link',
+      note TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (match_id) REFERENCES matches(id)
+    )
+  `);
 
-  CREATE INDEX IF NOT EXISTS idx_matches_date ON matches(match_date);
-  CREATE INDEX IF NOT EXISTS idx_matches_league ON matches(league);
-  CREATE INDEX IF NOT EXISTS idx_streams_match ON streams(match_id);
-`);
+  console.log('✓ Database initialized');
+}
 
-class FootballDB {
-  static getUpcomingMatches() {
-    const stmt = db.prepare(`
-      SELECT * FROM matches 
-      WHERE match_date >= datetime('now') 
-      ORDER BY match_date ASC 
-      LIMIT 50
-    `);
-    return stmt.all();
-  }
+function getLiveMatches() {
+  return Database.prepare('SELECT * FROM matches WHERE status = ? ORDER BY match_date ASC').all('live');
+}
 
-  static getLiveMatches() {
-    const stmt = db.prepare(`
-      SELECT * FROM matches 
-      WHERE status = 'live' 
-      ORDER BY match_date ASC
-    `);
-    return stmt.all();
-  }
+function getUpcomingMatches() {
+  return Database.prepare('SELECT * FROM matches WHERE status != ? ORDER BY match_date ASC').all('live');
+}
 
-  static getMatchesByLeague(league) {
-    if (league === 'live') return this.getLiveMatches();
-    const stmt = db.prepare(`
-      SELECT * FROM matches 
-      WHERE league = ? AND match_date >= datetime('now')
-      ORDER BY match_date ASC
-      LIMIT 50
-    `);
-    return stmt.all(league);
-  }
+function getMatchById(id) {
+  return Database.prepare('SELECT * FROM matches WHERE id = ?').get(id);
+}
 
-  static getMatchById(id) {
-    const stmt = db.prepare('SELECT * FROM matches WHERE id = ?');
-    return stmt.get(id);
-  }
+function getStreamsByMatchId(matchId) {
+  return Database.prepare('SELECT * FROM streams WHERE match_id = ? AND is_working = 1 ORDER BY votes DESC').all(matchId);
+}
 
-  static getStreamsByMatch(matchId) {
-    const stmt = db.prepare(`
-      SELECT * FROM streams 
-      WHERE match_id = ? AND is_working = 1
-      ORDER BY votes_positive - votes_negative DESC
-    `);
-    return stmt.all(matchId);
-  }
+function addMatch(homeTeam, awayTeam, league, matchDate, status = 'scheduled') {
+  const result = Database.prepare(
+    'INSERT INTO matches (home_team, away_team, league, match_date, status) VALUES (?, ?, ?, ?, ?)'
+  ).run(homeTeam, awayTeam, league, matchDate, status);
+  return result.lastInsertRowid;
+}
 
-  static addMatch(homeTeam, awayTeam, league, matchDate, stadium) {
-    const stmt = db.prepare(`
-      INSERT INTO matches (home_team, away_team, league, match_date, stadium)
-      VALUES (?, ?, ?, ?, ?)
-    `);
-    return stmt.run(homeTeam, awayTeam, league, matchDate, stadium);
-  }
+function addStream(matchId, sourceName, streamUrl, quality = 'HD', language = 'EN', type = 'link', note = '') {
+  Database.prepare(
+    'INSERT INTO streams (match_id, source_name, stream_url, quality, language, type, note) VALUES (?, ?, ?, ?, ?, ?, ?)'
+  ).run(matchId, sourceName, streamUrl, quality, language, type, note);
+}
 
-  static addStream(matchId, sourceName, streamUrl, quality = 'HD', language = 'EN') {
-    const stmt = db.prepare(`
-      INSERT INTO streams (match_id, source_name, stream_url, quality, language)
-      VALUES (?, ?, ?, ?, ?)
-    `);
-    return stmt.run(matchId, sourceName, streamUrl, quality, language);
-  }
+function voteStream(streamId, value = 1) {
+  Database.prepare('UPDATE streams SET votes = votes + ? WHERE id = ?').run(value, streamId);
+}
 
-  static voteStream(streamId, voteType) {
-    const column = voteType === 'positive' ? 'votes_positive' : 'votes_negative';
-    const stmt = db.prepare(`UPDATE streams SET ${column} = ${column} + 1 WHERE id = ?`);
-    return stmt.run(streamId);
-  }
-
-  static reportStream(streamId) {
-    const stmt = db.prepare(`UPDATE streams SET is_working = 0 WHERE id = ?`);
-    return stmt.run(streamId);
+function reportStream(streamId, reason = '') {
+  Database.prepare('UPDATE streams SET reports = reports + 1 WHERE id = ?').run(streamId);
+  if (reason) {
+    console.log(`Report for stream ${streamId}: ${reason}`);
   }
 }
 
-module.exports = FootballDB;
+function clearOldMatches(hours = 3) {
+  Database.prepare(`DELETE FROM streams WHERE match_id IN (SELECT id FROM matches WHERE match_date < datetime('now', '-${hours} hours') AND status = 'finished')`).run();
+  Database.prepare(`DELETE FROM matches WHERE match_date < datetime('now', '-${hours} hours') AND status = 'finished'`).run();
+}
+
+module.exports = {
+  init,
+  getLiveMatches,
+  getUpcomingMatches,
+  getMatchById,
+  getStreamsByMatchId,
+  addMatch,
+  addStream,
+  voteStream,
+  reportStream,
+  clearOldMatches
+};

@@ -3,6 +3,7 @@ const Database = require('better-sqlite3')('/root/football-stream/data/football.
 
 const API_URL = 'https://api.football-data.org/v4/matches';
 const PRE_MATCH_HOURS = 4;
+const UPCOMING_DAYS = 7;
 
 function fetchJSON(url, timeout = 10000) {
   return new Promise((resolve, reject) => {
@@ -24,7 +25,7 @@ async function fetchFixtures() {
     const fixtures = [];
     if (data.matches && Array.isArray(data.matches)) {
       for (const m of data.matches) {
-        if (m.status.type === 'SCHEDULED' || m.status.type === 'INPLAY') {
+        if (m.status.type === 'SCHEDULED' || m.status.type === 'INPLAY' || m.status.type === 'TIMED') {
           fixtures.push({
             home_team: m.homeTeam?.name || 'Unknown',
             away_team: m.awayTeam?.name || 'Unknown',
@@ -50,6 +51,13 @@ function isWithinPreMatch(isoTime) {
   return diffHours > 0 && diffHours <= PRE_MATCH_HOURS;
 }
 
+function isWithinNextDays(isoTime, days) {
+  const now = new Date();
+  const matchTime = new Date(isoTime);
+  const diffHours = (matchTime - now) / (1000 * 60 * 60);
+  return diffHours > 0 && diffHours <= (days * 24);
+}
+
 function addStreams(matchId, home, away, league) {
   const streams = [
     { name: 'Alkass Two', url: 'https://liveeu-gcp.alkassdigital.net/alkass2-p/main.m3u8' },
@@ -65,52 +73,56 @@ function addStreams(matchId, home, away, league) {
 function updateDatabase(fixtures) {
   console.log('Processing...');
   
-  // Clear old finished matches (older than 3 hours)
-  const clearSql = "DELETE FROM matches WHERE match_date < datetime('now', '-3 hours') AND status = 'finished'";
-  db.prepare(clearSql).run();
-  db.exec('DELETE FROM streams WHERE match_id NOT IN (SELECT id FROM matches)');
+  // Clear ALL old matches first (start fresh)
+  db.exec('DELETE FROM streams');
+  db.exec('DELETE FROM matches');
   console.log('Cleared old matches');
   
-  let added = 0, streamsAdded = 0;
+  const now = new Date();
+  let liveCount = 0, upcomingCount = 0, streamsAdded = 0;
   
   for (const f of fixtures) {
-    let match = db.prepare('SELECT id, status FROM matches WHERE home_team=? AND away_team=?').get(f.home_team, f.away_team);
+    // Only process if within next 7 days
+    if (!isWithinNextDays(f.match_time, UPCOMING_DAYS)) {
+      continue;
+    }
     
-    if (!match) {
-      const result = db.prepare('INSERT INTO matches (home_team, away_team, league, match_date, status) VALUES (?,?,?,?,?)')
-        .run(f.home_team, f.away_team, f.league, f.match_time, f.status);
-      added++;
-      console.log('Added:', f.home_team, 'vs', f.away_team, '-', f.match_time.split('T')[0]);
-      
-      // Add streams if LIVE or within H-4
-      if (f.status === 'live' || isWithinPreMatch(f.match_time)) {
-        addStreams(result.lastInsertRowid, f.home_team, f.away_team, f.league);
-        streamsAdded++;
-      }
+    const result = db.prepare('INSERT INTO matches (home_team, away_team, league, match_date, status) VALUES (?,?,?,?,?)')
+      .run(f.home_team, f.away_team, f.league, f.match_time, f.status);
+    
+    const matchId = result.lastInsertRowid;
+    
+    if (f.status === 'live') {
+      liveCount++;
+      console.log('🔴 LIVE:', f.home_team, 'vs', f.away_team);
+      // Add streams immediately for LIVE matches
+      addStreams(matchId, f.home_team, f.away_team, f.league);
+      streamsAdded++;
+    } else if (isWithinPreMatch(f.match_time)) {
+      upcomingCount++;
+      console.log('⏰ Upcoming (H-4):', f.home_team, 'vs', f.away_team, '-', f.match_time.split('T')[0]);
+      // Add streams H-4 before kickoff
+      addStreams(matchId, f.home_team, f.away_team, f.league);
+      streamsAdded++;
     } else {
-      // Check if need to add streams
-      const cnt = db.prepare('SELECT COUNT(*) as c FROM streams WHERE match_id=?').get(match.id).c;
-      if (cnt === 0 && (f.status === 'live' || isWithinPreMatch(f.match_time))) {
-        addStreams(match.id, f.home_team, f.away_team, f.league);
-        streamsAdded++;
-      }
-      // Update status to live if needed
-      if (f.status === 'live' && match.status !== 'live') {
-        db.prepare('UPDATE matches SET status=? WHERE id=?').run('live', match.id);
-      }
+      upcomingCount++;
+      console.log('📅 Upcoming:', f.home_team, 'vs', f.away_team, '-', f.match_time.split('T')[0]);
+      // No streams yet (wait until H-4)
     }
   }
   
   console.log('');
-  console.log('New fixtures:', added);
-  console.log('Streams added:', streamsAdded);
+  console.log('🔴 LIVE NOW:', liveCount);
+  console.log('📅 NEXT 7 DAYS:', upcomingCount);
+  console.log('📺 Streams added:', streamsAdded);
 }
 
 const db = Database;
 console.log('');
 console.log('Real Fixture Fetcher');
-console.log('Pre-match window: H-' + PRE_MATCH_HOURS + ' hours');
-console.log('Streams added only when LIVE or within H-4 hours');
+console.log('Live window: Currently LIVE only');
+console.log('Upcoming window: Next', UPCOMING_DAYS, 'days');
+console.log('Pre-match streams: H-' + PRE_MATCH_HOURS + ' hours');
 console.log('');
 
 fetchFixtures().then(fixtures => {

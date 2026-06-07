@@ -3,212 +3,133 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Football Stream - Live Football Matches</title>
+  <title>Football Stream - Live & Upcoming</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Inter', sans-serif; }
-    .gradient-bg { background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); }
+    .gradient-bg { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
     .live-pulse { animation: pulse 2s infinite; }
     @keyframes pulse {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.5; }
     }
-    .league-tab.active { background: rgba(59, 130, 246, 0.2); border-color: #3b82f6; }
+    .match-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
   </style>
 </head>
 <body class="gradient-bg min-h-screen text-white">
   <!-- Header -->
-  <header class="bg-slate-900/80 backdrop-blur-sm border-b border-slate-700 sticky top-0 z-50">
-    <div class="max-w-6xl mx-auto px-4 py-6">
-      <div class="flex items-center justify-between mb-4">
-        <div>
-          <h1 class="text-3xl font-bold">⚽ Football Stream</h1>
-          <p class="text-slate-400 text-sm mt-1">Live football matches - Free streaming</p>
-        </div>
-        <div class="text-right">
-          <div class="text-xs text-slate-400">Live Now</div>
-          <div class="text-2xl font-bold text-green-400"><%= matches.filter(m => m.status === 'live').length %> Matches</div>
-        </div>
-      </div>
-      
-      <!-- League Tabs -->
-      <div class="flex gap-2 overflow-x-auto pb-2">
-        <button onclick="filterLeague('all')" class="league-tab active px-4 py-2 rounded-lg border border-slate-600 bg-slate-800/50 hover:bg-slate-700 transition-all whitespace-nowrap text-sm font-medium">
-          📺 All Matches
-        </button>
-        <button onclick="filterLeague('live')" class="league-tab px-4 py-2 rounded-lg border border-red-500/50 bg-red-500/10 hover:bg-red-500/20 transition-all whitespace-nowrap text-sm font-medium">
-          🔴 LIVE NOW
-        </button>
-        <% const leagues = [...new Set(matches.map(m => m.league))]; %>
-        <% leagues.forEach(league => { %>
-          <button onclick="filterLeague('<%= league %>')" class="league-tab px-4 py-2 rounded-lg border border-slate-600 bg-slate-800/50 hover:bg-slate-700 transition-all whitespace-nowrap text-sm font-medium">
-            <%= league %>
-          </button>
-        <% }); %>
+  <header class="border-b border-slate-700/50 bg-slate-900/50 backdrop-blur-sm sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">⚽ Football Stream</h1>
+        <nav class="hidden md:flex gap-6">
+          <a href="/" class="text-blue-400 font-medium">Home</a>
+          <a href="/live" class="text-slate-400 hover:text-white transition-colors">Live Now</a>
+          <a href="/upcoming" class="text-slate-400 hover:text-white transition-colors">Upcoming</a>
+        </nav>
       </div>
     </div>
   </header>
 
-  <!-- Main Content -->
-  <main class="max-w-6xl mx-auto px-4 py-8">
+  <main class="max-w-7xl mx-auto px-4 py-8">
     <!-- LIVE NOW Section -->
-    <% const liveMatches = matches.filter(m => m.status === 'live'); %>
-    <% if (liveMatches.length > 0) { %>
-      <section class="mb-8">
-        <div class="flex items-center gap-2 mb-4">
-          <span class="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold live-pulse">🔴 LIVE</span>
-          <h2 class="text-xl font-bold">Matches In Progress</h2>
-        </div>
-        
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <section class="mb-12">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-3 h-3 bg-red-500 rounded-full live-pulse"></div>
+        <h2 class="text-2xl font-bold">LIVE NOW</h2>
+      </div>
+      
+      <% if (liveMatches && liveMatches.length > 0) { %>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <% liveMatches.forEach(match => { %>
-            <a href="/match/<%= match.id %>" class="block bg-gradient-to-br from-red-900/50 to-slate-800 rounded-xl p-4 border border-red-500/50 hover:border-red-400 transition-all group">
-              <div class="flex items-center justify-between mb-3">
-                <span class="text-xs text-red-400 font-medium"><%= match.league %></span>
-                <span class="bg-red-500 text-white px-2 py-1 rounded text-xs font-bold live-pulse">LIVE</span>
-              </div>
-              
-              <div class="space-y-2 mb-3">
-                <div class="flex items-center justify-between">
-                  <span class="font-semibold group-hover:text-red-400 transition-colors"><%= match.home_team %></span>
-                  <span class="text-slate-400 text-sm"><%= match.home_score || '-' %></span>
-                </div>
-                <div class="flex items-center justify-between">
-                  <span class="font-semibold group-hover:text-red-400 transition-colors"><%= match.away_team %></span>
-                  <span class="text-slate-400 text-sm"><%= match.away_score || '-' %></span>
-                </div>
-              </div>
-              
-              <div class="flex items-center justify-between text-xs text-slate-400">
-                <span>⏱️ <%= match.match_time || 'Live' %></span>
-                <span class="text-green-400"><%= match.stream_count || 0 %> Streams</span>
-              </div>
-            </a>
-          <% }); %>
-        </div>
-      </section>
-    <% } %>
-
-    <!-- Today's Matches -->
-    <% const today = new Date().toISOString().split('T')[0]; %>
-    <% const todayMatches = matches.filter(m => m.match_date && m.match_date.startsWith(today) && m.status !== 'live'); %>
-    <% if (todayMatches.length > 0) { %>
-      <section class="mb-8">
-        <h2 class="text-xl font-bold mb-4">📅 Today's Matches</h2>
-        
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <% todayMatches.forEach(match => { %>
-            <a href="/match/<%= match.id %>" class="block bg-slate-800 rounded-xl p-4 border border-slate-700 hover:border-blue-500 transition-all group">
-              <div class="flex items-center justify-between mb-3">
+            <a href="/match/<%= match.id %>" class="match-card block bg-slate-800 rounded-xl p-4 border-2 border-red-500 hover:border-red-400 transition-all group">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs text-red-400 font-semibold flex items-center gap-1">
+                  <span class="w-2 h-2 bg-red-500 rounded-full live-pulse"></span>
+                  LIVE
+                </span>
                 <span class="text-xs text-slate-400"><%= match.league %></span>
-                <span class="text-xs text-slate-500"><%= new Date(match.match_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) %></span>
               </div>
-              
-              <div class="space-y-2 mb-3">
+              <div class="space-y-2">
                 <div class="flex items-center justify-between">
                   <span class="font-semibold group-hover:text-blue-400 transition-colors"><%= match.home_team %></span>
-                </div>
-                <div class="flex items-center justify-between">
+                  <span class="text-slate-400 text-sm">vs</span>
                   <span class="font-semibold group-hover:text-blue-400 transition-colors"><%= match.away_team %></span>
                 </div>
               </div>
-              
-              <div class="flex items-center justify-between text-xs text-slate-400">
-                <span>🕐 Upcoming</span>
-                <span class="text-blue-400"><%= match.stream_count || 0 %> Streams</span>
+              <div class="mt-3 flex items-center justify-between">
+                <span class="text-xs text-slate-400">Kickoff: Now</span>
+                <span class="text-xs text-blue-400 font-medium">Watch →</span>
               </div>
             </a>
           <% }); %>
-        </div>
-      </section>
-    <% } %>
-
-    <!-- All Matches -->
-    <section>
-      <h2 class="text-xl font-bold mb-4">🏆 All Matches</h2>
-      
-      <% if (matches.length === 0) { %>
-        <div class="bg-slate-800/50 rounded-xl p-8 text-center text-slate-400 border border-slate-700">
-          <p class="text-lg mb-2">No matches available</p>
-          <p class="text-sm">Check back later for upcoming fixtures</p>
         </div>
       <% } else { %>
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4" id="matches-grid">
-          <% matches.forEach(match => { %>
-            <a href="/match/<%= match.id %>" data-league="<%= match.league %>" class="match-card block bg-slate-800 rounded-xl p-4 border border-slate-700 hover:border-blue-500 transition-all group">
-              <div class="flex items-center justify-between mb-3">
-                <span class="text-xs text-slate-400"><%= match.league %></span>
-                <% if (match.status === 'live') { %>
-                  <span class="bg-red-500 text-white px-2 py-1 rounded text-xs font-bold live-pulse">LIVE</span>
+        <div class="bg-slate-800/50 rounded-xl p-8 text-center border border-slate-700">
+          <p class="text-slate-400 text-lg">No matches live right now</p>
+          <p class="text-slate-500 text-sm mt-2">Check back later for upcoming fixtures</p>
+        </div>
+      <% } %>
+    </section>
+
+    <!-- NEXT 7 DAYS Section -->
+    <section>
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+        <h2 class="text-2xl font-bold">NEXT 7 DAYS</h2>
+      </div>
+      
+      <% if (upcomingMatches && upcomingMatches.length > 0) { %>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <% upcomingMatches.forEach(match => { %>
+            <a href="/match/<%= match.id %>" class="match-card block bg-slate-800 rounded-xl p-4 border border-slate-700 hover:border-blue-500 transition-all group">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs text-blue-400 font-medium"><%= match.league %></span>
+                <% if (match.streams && match.streams.length > 0) { %>
+                  <span class="text-xs text-green-400 flex items-center gap-1">
+                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/></svg>
+                    Streams Ready
+                  </span>
                 <% } else { %>
-                  <span class="text-xs text-slate-500"><%= new Date(match.match_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) %></span>
+                  <span class="text-xs text-slate-500">No streams yet</span>
                 <% } %>
               </div>
-              
-              <div class="space-y-2 mb-3">
+              <div class="space-y-2">
                 <div class="flex items-center justify-between">
                   <span class="font-semibold group-hover:text-blue-400 transition-colors"><%= match.home_team %></span>
-                  <% if (match.status === 'live') { %>
-                    <span class="text-slate-400 text-sm"><%= match.home_score || '-' %></span>
-                  <% } %>
-                </div>
-                <div class="flex items-center justify-between">
+                  <span class="text-slate-400 text-sm">vs</span>
                   <span class="font-semibold group-hover:text-blue-400 transition-colors"><%= match.away_team %></span>
-                  <% if (match.status === 'live') { %>
-                    <span class="text-slate-400 text-sm"><%= match.away_score || '-' %></span>
-                  <% } %>
                 </div>
               </div>
-              
-              <div class="flex items-center justify-between text-xs text-slate-400">
-                <span><%= match.status === 'live' ? '⏱️ Live' : '🕐 ' + new Date(match.match_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) %></span>
-                <span class="text-blue-400"><%= match.stream_count || 0 %> Streams</span>
+              <div class="mt-3 flex items-center justify-between">
+                <span class="text-xs text-slate-400">
+                  <%= new Date(match.match_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) %>
+                  <%= new Date(match.match_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) %>
+                </span>
+                <span class="text-xs text-blue-400 font-medium">Details →</span>
               </div>
             </a>
           <% }); %>
+        </div>
+      <% } else { %>
+        <div class="bg-slate-800/50 rounded-xl p-8 text-center border border-slate-700">
+          <p class="text-slate-400 text-lg">No upcoming fixtures in the next 7 days</p>
+          <p class="text-slate-500 text-sm mt-2">Season break or no data available</p>
         </div>
       <% } %>
     </section>
   </main>
 
   <!-- Footer -->
-  <footer class="bg-slate-900/80 border-t border-slate-700 mt-12">
-    <div class="max-w-6xl mx-auto px-4 py-6 text-center text-slate-400 text-sm">
-      <p>⚽ Football Stream - Free live football streaming</p>
-      <p class="mt-1">Streams sourced from official broadcasters</p>
+  <footer class="border-t border-slate-700/50 bg-slate-900/50 mt-12">
+    <div class="max-w-7xl mx-auto px-4 py-6 text-center text-slate-400 text-sm">
+      <p>⚽ Football Stream - Real fixtures only</p>
+      <p class="mt-1">Streams available H-4 hours before kickoff</p>
     </div>
   </footer>
 
   <script>
-    function filterLeague(league) {
-      // Update active tab
-      document.querySelectorAll('.league-tab').forEach(tab => {
-        tab.classList.remove('active');
-      });
-      event.target.classList.add('active');
-      
-      // Filter matches
-      const cards = document.querySelectorAll('.match-card');
-      cards.forEach(card => {
-        if (league === 'all' || card.dataset.league === league) {
-          card.style.display = 'block';
-        } else {
-          card.style.display = 'none';
-        }
-      });
-      
-      // Special handling for LIVE filter
-      if (league === 'live') {
-        cards.forEach(card => {
-          if (card.innerHTML.includes('LIVE')) {
-            card.style.display = 'block';
-          } else {
-            card.style.display = 'none';
-          }
-        });
-      }
-    }
+    // Auto-refresh every 60 seconds for live matches
+    setTimeout(() => location.reload(), 60000);
   </script>
 </body>
 </html>
