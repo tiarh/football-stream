@@ -24,15 +24,27 @@ router.get('/', (req, res) => {
       LIMIT 10
     `).all();
     
-    // Get top streams by votes
-    const topStreams = db.prepare(`
-      SELECT s.*, m.home_team, m.away_team
-      FROM streams s
-      JOIN matches m ON s.match_id = m.id
-      WHERE s.is_working = 1
-      ORDER BY s.votes DESC
-      LIMIT 5
-    `).all();
+    // Get top streams by votes (handle missing column)
+    let topStreams = [];
+    try {
+      topStreams = db.prepare(`
+        SELECT s.*, m.home_team, m.away_team
+        FROM streams s
+        JOIN matches m ON s.match_id = m.id
+        WHERE s.is_working = 1
+        ORDER BY s.votes DESC
+        LIMIT 5
+      `).all();
+    } catch (err) {
+      // Fallback if votes column doesn't exist
+      topStreams = db.prepare(`
+        SELECT s.*, m.home_team, m.away_team, 0 as votes
+        FROM streams s
+        JOIN matches m ON s.match_id = m.id
+        WHERE s.is_working = 1
+        LIMIT 5
+      `).all();
+    }
     
     // Get league distribution
     const leagueStats = db.prepare(`
