@@ -28,29 +28,29 @@ const sampleMatches = [
   
   // World Cup 2026 — Group Stage (12 groups, 48 teams)
   // Group A: USA, Bolivia, Canada, Mexico
-  { home: 'Mexico', away: 'Bolivia', league: 'World Cup 2026', date: '2026-06-19 20:00', stadium: 'Estadio Azteca, Mexico City' },
-  { home: 'Canada', away: 'USA', league: 'World Cup 2026', date: '2026-06-19 23:00', stadium: 'MetLife Stadium, East Rutherford' },
+  { home: 'Mexico', away: 'Bolivia', league: 'FIFA World Cup 2026', date: '2026-06-19 20:00', stadium: 'Estadio Azteca, Mexico City' },
+  { home: 'Canada', away: 'USA', league: 'FIFA World Cup 2026', date: '2026-06-19 23:00', stadium: 'MetLife Stadium, East Rutherford' },
   // Group B: Spain, New Zealand, Australia, Netherlands
-  { home: 'Netherlands', away: 'New Zealand', league: 'World Cup 2026', date: '2026-06-20 17:00', stadium: 'Johan Cruyff Arena, Amsterdam' },
-  { home: 'Australia', away: 'Spain', league: 'World Cup 2026', date: '2026-06-20 20:00', stadium: 'Stade de France, Paris' },
+  { home: 'Netherlands', away: 'New Zealand', league: 'FIFA World Cup 2026', date: '2026-06-20 17:00', stadium: 'Johan Cruyff Arena, Amsterdam' },
+  { home: 'Australia', away: 'Spain', league: 'FIFA World Cup 2026', date: '2026-06-20 20:00', stadium: 'Stade de France, Paris' },
   // Group C: Argentina, Chile, Brazil, Colombia
-  { home: 'Brazil', away: 'Argentina', league: 'World Cup 2026', date: '2026-06-20 14:00', stadium: 'MetLife Stadium, East Rutherford' },
-  { home: 'Colombia', away: 'Chile', league: 'World Cup 2026', date: '2026-06-20 23:00', stadium: 'Estadio Metropolitano, Barranquilla' },
+  { home: 'Brazil', away: 'Argentina', league: 'FIFA World Cup 2026', date: '2026-06-20 14:00', stadium: 'MetLife Stadium, East Rutherford' },
+  { home: 'Colombia', away: 'Chile', league: 'FIFA World Cup 2026', date: '2026-06-20 23:00', stadium: 'Estadio Metropolitano, Barranquilla' },
   // Group D: Germany, Italy, France, Portugal
-  { home: 'Portugal', away: 'Italy', league: 'World Cup 2026', date: '2026-06-21 17:00', stadium: 'Estádio da Luz, Lisbon' },
-  { home: 'France', away: 'Germany', league: 'World Cup 2026', date: '2026-06-21 20:00', stadium: 'Stade de France, Paris' },
+  { home: 'Portugal', away: 'Italy', league: 'FIFA World Cup 2026', date: '2026-06-21 17:00', stadium: 'Estádio da Luz, Lisbon' },
+  { home: 'France', away: 'Germany', league: 'FIFA World Cup 2026', date: '2026-06-21 20:00', stadium: 'Stade de France, Paris' },
   // Group E: Japan, South Korea, Saudi Arabia, Iran
-  { home: 'Saudi Arabia', away: 'Japan', league: 'World Cup 2026', date: '2026-06-21 14:00', stadium: 'King Abdullah Sports City, Jeddah' },
-  { home: 'South Korea', away: 'Iran', league: 'World Cup 2026', date: '2026-06-21 17:00', stadium: 'Seoul World Cup Stadium' },
+  { home: 'Saudi Arabia', away: 'Japan', league: 'FIFA World Cup 2026', date: '2026-06-21 14:00', stadium: 'King Abdullah Sports City, Jeddah' },
+  { home: 'South Korea', away: 'Iran', league: 'FIFA World Cup 2026', date: '2026-06-21 17:00', stadium: 'Seoul World Cup Stadium' },
   // Group F: England, Serbia, Belgium, Wales
-  { home: 'Belgium', away: 'England', league: 'World Cup 2026', date: '2026-06-22 17:00', stadium: 'King Baudouin Stadium, Brussels' },
-  { home: 'Serbia', away: 'Wales', league: 'World Cup 2026', date: '2026-06-22 20:00', stadium: 'Rajko Mitić Stadium, Belgrade' },
+  { home: 'Belgium', away: 'England', league: 'FIFA World Cup 2026', date: '2026-06-22 17:00', stadium: 'King Baudouin Stadium, Brussels' },
+  { home: 'Serbia', away: 'Wales', league: 'FIFA World Cup 2026', date: '2026-06-22 20:00', stadium: 'Rajko Mitić Stadium, Belgrade' },
   // Group G: Uruguay, Ecuador, Paraguay, Venezuela
-  { home: 'Ecuador', away: 'Venezuela', league: 'World Cup 2026', date: '2026-06-22 14:00', stadium: 'Estadio Rodrigo Paz, Quito' },
-  { home: 'Paraguay', away: 'Uruguay', league: 'World Cup 2026', date: '2026-06-22 23:00', stadium: 'Defensores del Chaco, Asunción' },
+  { home: 'Ecuador', away: 'Venezuela', league: 'FIFA World Cup 2026', date: '2026-06-22 14:00', stadium: 'Estadio Rodrigo Paz, Quito' },
+  { home: 'Paraguay', away: 'Uruguay', league: 'FIFA World Cup 2026', date: '2026-06-22 23:00', stadium: 'Defensores del Chaco, Asunción' },
   // Group H: Morocco, Croatia, Denmark, Algeria
-  { home: 'Denmark', away: 'Morocco', league: 'World Cup 2026', date: '2026-06-22 20:00', stadium: 'Parken Stadium, Copenhagen' },
-  { home: 'Algeria', away: 'Croatia', league: 'World Cup 2026', date: '2026-06-22 23:00', stadium: 'Stade 5 Juillet, Algiers' },
+  { home: 'Denmark', away: 'Morocco', league: 'FIFA World Cup 2026', date: '2026-06-22 20:00', stadium: 'Parken Stadium, Copenhagen' },
+  { home: 'Algeria', away: 'Croatia', league: 'FIFA World Cup 2026', date: '2026-06-22 23:00', stadium: 'Stade 5 Juillet, Algiers' },
 ];
 
 // Sample stream sources (aggregator pattern - links would be scraped/added)

@@ -119,17 +119,61 @@
     </section>
   </main>
 
+  <!-- WC 2026 Winner Odds -->
+  <section class="mb-8">
+    <div class="flex items-center gap-3 mb-4">
+      <h2 class="text-xl font-bold">🏆 WC 2026 Winner Odds</h2>
+      <span class="text-xs text-slate-500" id="odds-meta">Loading from Polymarket...</span>
+    </div>
+    <div class="bg-slate-800/60 rounded-xl border border-slate-700 p-4">
+      <div id="odds-container" class="space-y-0">
+        <div class="text-slate-500 text-sm animate-pulse">Fetching latest odds...</div>
+      </div>
+    </div>
+  </section>
+
   <!-- Footer -->
   <footer class="border-t border-slate-700/50 bg-slate-900/50 mt-12">
     <div class="max-w-7xl mx-auto px-4 py-6 text-center text-slate-400 text-sm">
-      <p>⚽ Football Stream - Real fixtures only</p>
+      <p>⚽ Football Stream - WC 2026 + Top Leagues</p>
       <p class="mt-1">Streams available H-4 hours before kickoff</p>
+      <p class="mt-1 text-blue-400/60 text-xs">Odds powered by Polymarket</p>
     </div>
   </footer>
 
   <script>
     // Auto-refresh every 60 seconds for live matches
     setTimeout(() => location.reload(), 60000);
+
+    // Load WC 2026 winner odds from Polymarket
+    async function loadOdds() {
+      try {
+        const res = await fetch('/api/odds');
+        const data = await res.json();
+        const container = document.getElementById('odds-container');
+        if (!container || !data.odds) return;
+
+        const top10 = Object.entries(data.odds).slice(0, 10);
+        container.innerHTML = top10.map(([team, o]) => `
+          <div class="flex items-center justify-between py-1.5">
+            <span class="text-white font-medium text-sm">${team}</span>
+            <div class="flex items-center gap-3">
+              <span class="text-blue-400 text-xs font-mono">${o.impliedProb}</span>
+              <span class="text-green-400 text-xs font-mono">${o.decimalOdds}x</span>
+            </div>
+          </div>
+        `).join('');
+
+        const meta = document.getElementById('odds-meta');
+        if (meta && data.updatedAt) {
+          meta.textContent = 'Odds via Polymarket · ' + new Date(data.updatedAt).toLocaleTimeString();
+        }
+      } catch (e) {
+        console.error('Failed to load odds:', e);
+      }
+    }
+    loadOdds();
+    setInterval(loadOdds, 120000); // refresh every 2 min
   </script>
 </body>
 </html>

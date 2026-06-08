@@ -92,15 +92,46 @@ app.post('/api/report', (req, res) => {
   }
 });
 
-// API: Get all matches (for testing)
-app.get('/api/matches', (req, res) => {
+// API: Get WC 2026 winner odds from Polymarket
+const fs = require('fs');
+const ODDS_FILE = '/root/football-stream/data/poly-odds.json';
+
+app.get('/api/odds', (req, res) => {
   try {
-    const live = Database.getLiveMatches();
-    const upcoming = Database.getUpcomingMatches();
-    res.json({ live, upcoming, total: live.length + upcoming.length });
+    // Dynamic fetch from Polymarket to get live odds
+    const https = require('https');
+    https.get('https://gamma-api.polymarket.com/markets?tagSlug=sports&limit=300&closed=false', (apiRes) => {
+      let data = '';
+      apiRes.on('data', chunk => data += chunk);
+      apiRes.on('end', () => {
+        try {
+          const markets = JSON.parse(data);
+          const odds = {};
+          for (const m of markets) {
+            const q = m.question || '';
+            if (!q.includes('2026 FIFA World Cup') || !q.includes(' win ')) continue;
+            const team = q.replace('Will ','').replace(' win the 2026 FIFA World Cup?','');
+            const prices = JSON.parse(m.outcomePrices || '[]');
+            if (prices.length < 2) continue;
+            odds[team] = {
+              yesPrice: prices[0],
+              noPrice: prices[1],
+              decimalOdds: prices[0] > 0 ? (1/parseFloat(prices[0])).toFixed(2) : null,
+              impliedProb: (parseFloat(prices[0])*100).toFixed(1) + '%',
+              volume: m.volume,
+              slug: m.slug,
+            };
+          }
+          // Sort by probability
+          const sorted = Object.entries(odds).sort((a,b) => parseFloat(b[1].yesPrice) - parseFloat(a[1].yesPrice));
+          res.json({ updatedAt: new Date().toISOString(), source: 'polymarket', odds: Object.fromEntries(sorted) });
+        } catch {
+          res.status(500).json({ error: 'Failed to parse odds data' });
+        }
+      });
+    }).on('error', () => res.status(500).json({ error: 'Failed to fetch from Polymarket' }));
   } catch (err) {
-    console.error('API matches error:', err);
-    res.status(500).json({ error: 'Failed to fetch matches' });
+    res.status(500).json({ error: err.message });
   }
 });
 
