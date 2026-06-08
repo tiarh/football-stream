@@ -6,8 +6,9 @@
 <title><%= match.home_team %> vs <%= match.away_team %> - Football Stream</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/videojs-http-source-selector@1.1.6/dist/videojs-http-source-selector.css" rel="stylesheet" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>body{font-family:'Inter',sans-serif}.gradient-bg{background:linear-gradient(135deg,#1e3a5f 0%,#0f172a 100%)}.live-pulse{animation:pulse 2s infinite}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}.video-container{position:relative;padding-bottom:56.25%;height:0;overflow:hidden;background:#000;border-radius:12px}.video-container iframe,.video-container video{position:absolute;top:0;left:0;width:100%;height:100%}.stream-card.active{border-color:#22c55e;background:rgba(34,197,94,0.1)}</style>
+<style>body{font-family:'Inter',sans-serif}.gradient-bg{background:linear-gradient(135deg,#1e3a5f 0%,#0f172a 100%)}.live-pulse{animation:pulse 2s infinite}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}.video-container{position:relative;padding-bottom:56.25%;height:0;overflow:hidden;background:#000;border-radius:12px}.video-container iframe,.video-container video,.video-container .video-js{position:absolute;top:0;left:0;width:100%;height:100%}.stream-card.active{border-color:#22c55e;background:rgba(34,197,94,0.1)} .quality-menu{position:absolute;top:10px;right:10px;z-index:20;background:rgba(0,0,0,0.8);color:#fff;border:1px solid #444;padding:4px 8px;border-radius:4px;font-size:12px;cursor:pointer;} .quality-menu option{background:#000;color:#fff}</style>
 </head>
 <body class="gradient-bg min-h-screen text-white">
 <header class="bg-slate-900/80 backdrop-blur-sm border-b border-slate-700 sticky top-0 z-50">
@@ -53,6 +54,7 @@
 </main>
 <footer class="border-t border-slate-700/50 bg-slate-900/50 mt-12"><div class="max-w-6xl mx-auto px-4 py-6 text-center text-slate-400 text-xs"><p>⚽ Football Stream — Real channels, real fixtures, real odds.</p><p class="mt-1 text-slate-500">Odds via Polymarket · Streams via IPTV-org · Data via Open Football</p></div></footer>
 <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/videojs-http-source-selector@1.1.6/dist/videojs-http-source-selector.min.js"></script>
 <script>
 let player=null;
 function loadStream(el){
@@ -63,12 +65,35 @@ function loadStream(el){
   const container=document.getElementById('player-container');
   if(!url.startsWith('/proxy')&&(url.startsWith('http')||url.includes('.m3u8'))){url='/proxy?url='+encodeURIComponent(url);}
   if(type==='link'){window.open(url.replace('/proxy?url=',''),'_blank');container.innerHTML='<div class="flex items-center justify-center h-full text-green-400"><p>Opening in new tab...</p></div>';}
-  else if(type==='hls'){container.innerHTML='<video id="video-player" class="video-js vjs-default-skin vjs-big-play-centered" controls preload="auto" style="width:100%;height:100%"></video>';if(player)player.dispose();player=videojs('video-player',{sources:[{src:url,type:'application/x-mpegURL'}],autoplay:true});}
+  else if(type==='hls'){container.innerHTML='<video id="video-player" class="video-js vjs-default-skin vjs-big-play-centered" controls preload="auto" crossorigin="anonymous" playsinline muted style="width:100%;height:100%"></video>';if(player)player.dispose();player=videojs('video-player',{html5:{vhs:{overrideNative:true,limitRenditionByPlayerDimensions:true}},sources:[{src:url,type:'application/x-mpegURL'}],autoplay:true});player.httpSourceSelector({format:'bitrate'});}
   else{container.innerHTML='<iframe src="'+url+'" frameborder="0" allowfullscreen allow="autoplay; encrypted-media" style="width:100%;height:100%"></iframe>';}
   container.scrollIntoView({behavior:'smooth',block:'center'});
 }
 async function vote(id,type){try{const r=await fetch('/api/vote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({streamId:id,voteType:type})});if(r.ok)location.reload();}catch(e){}}
 async function report(id){if(!confirm('Report as broken?'))return;try{const r=await fetch('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({streamId:id})});if(r.ok)location.reload();}catch(e){}}
+</script>
+<script>
+var qsId = setInterval(function() {
+  if (player && player.qualityLevels) {
+    clearInterval(qsId);
+    var ql = player.qualityLevels();
+    var menu = document.createElement('select');
+    menu.className = 'quality-menu';
+    menu.innerHTML = '<option value="auto">Auto</option>';
+    menu.onchange = function() {
+      for (var i = 0; i < ql.length; i++) {
+        ql[i].enabled = (menu.value === 'auto' || ql[i].id === menu.value);
+      }
+    };
+    ql.on('addqualitylevel', function(e) {
+      var o = document.createElement('option');
+      o.value = e.qualityLevel.id;
+      o.text = e.qualityLevel.height ? e.qualityLevel.height + 'p' : 'Track';
+      menu.appendChild(o);
+    });
+    player.controlBar.el().appendChild(menu);
+  }
+}, 1000);
 </script>
 </body>
 </html>
