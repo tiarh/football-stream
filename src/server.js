@@ -13,24 +13,29 @@ app.set('views', path.join(__dirname, '../views'));
 app.use(express.static(path.join(__dirname, '../public')));
 app.use(express.json());
 
-// Load WC 2026 match odds from local cache (refreshed by cron)
-const ODDS_FILE = path.join(__dirname, '../data/poly-match-odds.json');
-let polyMatchOdds = {};
+// Team name normalization: DB names → Polymarket names
+const TEAM_ALIAS = {
+  'South Korea': 'Korea Republic',
+  'Czech Republic': 'Czechia',
+  'T\u00fcrkiye': 'T\u00fcrkiye',
+};
 
+// Build match odds lookup (keyed by both orderings)
+const polyMatchOdds = {};
 try {
   const raw = fs.readFileSync(ODDS_FILE, 'utf8');
   const data = JSON.parse(raw);
   for (const [slug, o] of Object.entries(data.odds || {})) {
-    const home = o.home, away = o.away;
-    if (home && away) {
-      // Key by both orderings for easy lookup
-      polyMatchOdds[`${home} vs ${away}`] = o;
-      polyMatchOdds[`${away} vs ${home}`] = o;
-    }
+    const home = o.home || '', away = o.away || '';
+    if (!home || !away) continue;
+    // Key by Polymarket names (exact)
+    polyMatchOdds[`${home} vs ${away}`] = o;
+    // Also key by swapped (for lookup when DB order differs)
+    polyMatchOdds[`${away} vs ${home}`] = o;
   }
-  console.log(`📊 Loaded match odds for ${Object.keys(data.odds || {}).length} matches`);
+  console.log(`\uD83D\uDCCA Loaded match odds for ${Object.keys(data.odds || {}).length} matches`);
 } catch (e) {
-  console.log('⚠️  No match odds cache found, run: node scripts/fetch-poly-match-odds.js');
+  console.log('\u26A0\uFE0F  No match odds cache found, run: node scripts/fetch-poly-match-odds.js');
 }
 
 // Refresh odds cache from Polymarket (call this periodically)
@@ -59,9 +64,13 @@ app.get('/', (req, res) => {
     upcomingMatches.forEach(match => {
       const streams = Database.getStreamsByMatchId(match.id);
       match.streams = streams;
-      // Attach Polymarket 3-way match odds
-      const key1 = `${match.home_team} vs ${match.away_team}`;
-      const key2 = `${match.away_team} vs ${match.home_team}`;
+      // Attach Polymarket 3-way match odds (normalize team names)
+      const dbHome = match.home_team;
+      const dbAway = match.away_team;
+      const homeNorm = TEAM_ALIAS[dbHome] || dbHome;
+      const awayNorm = TEAM_ALIAS[dbAway] || dbAway;
+      const key1 = `${homeNorm} vs ${awayNorm}`;
+      const key2 = `${awayNorm} vs ${homeNorm}`;
       match.odds = polyMatchOdds[key1] || polyMatchOdds[key2] || null;
     });
     
