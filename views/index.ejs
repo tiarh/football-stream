@@ -81,8 +81,6 @@
       <% if (upcomingMatches && upcomingMatches.length > 0) { %>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <% upcomingMatches.forEach(match => { %>
-            <% const homeOdds = polyOdds[match.home_team]; %>
-            <% const awayOdds = polyOdds[match.away_team]; %>
             <a href="/match/<%= match.id %>" class="match-card block bg-slate-800 rounded-xl p-4 border border-slate-700 hover:border-blue-500 transition-all group">
               <div class="flex items-center justify-between mb-2">
                 <span class="text-xs text-blue-400 font-medium"><%= match.league %></span>
