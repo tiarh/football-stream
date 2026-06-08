@@ -1,0 +1,159 @@
+{
+  "updatedAt": "2026-06-08T11:11:07.716Z",
+  "source": "https://gamma-api.polymarket.com",
+  "odds": {
+    "Spain": {
+      "yesPrice": "0.1615",
+      "noPrice": "0.8385",
+      "impliedProb": "16.2%",
+      "decimalOdds": "6.19",
+      "volume": "31681061",
+      "liquidity": "1373463",
+      "slug": "will-spain-win-the-2026-fifa-world-cup-963"
+    },
+    "England": {
+      "yesPrice": "0.1095",
+      "noPrice": "0.8905",
+      "impliedProb": "10.9%",
+      "decimalOdds": "9.13",
+      "volume": "27333657",
+      "liquidity": "1963225",
+      "slug": "will-england-win-the-2026-fifa-world-cup-937"
+    },
+    "France": {
+      "yesPrice": "0.1615",
+      "noPrice": "0.8385",
+      "impliedProb": "16.2%",
+      "decimalOdds": "6.19",
+      "volume": "39106425",
+      "liquidity": "1307418",
+      "slug": "will-france-win-the-2026-fifa-world-cup-924"
+    },
+    "Brazil": {
+      "yesPrice": "0.0835",
+      "noPrice": "0.9165",
+      "impliedProb": "8.3%",
+      "decimalOdds": "11.98",
+      "volume": "29073618",
+      "liquidity": "1905372",
+      "slug": "will-brazil-win-the-2026-fifa-world-cup-183"
+    },
+    "Argentina": {
+      "yesPrice": "0.0885",
+      "noPrice": "0.9115",
+      "impliedProb": "8.8%",
+      "decimalOdds": "11.30",
+      "volume": "28257028",
+      "liquidity": "1764279",
+      "slug": "will-argentina-win-the-2026-fifa-world-cup-245"
+    },
+    "Germany": {
+      "yesPrice": "0.0535",
+      "noPrice": "0.9465",
+      "impliedProb": "5.3%",
+      "decimalOdds": "18.69",
+      "volume": "30146532",
+      "liquidity": "1330220",
+      "slug": "will-germany-win-the-2026-fifa-world-cup-467"
+    },
+    "Portugal": {
+      "yesPrice": "0.0995",
+      "noPrice": "0.9005",
+      "impliedProb": "10.0%",
+      "decimalOdds": "10.05",
+      "volume": "33221822",
+      "liquidity": "751910",
+      "slug": "will-portugal-win-the-2026-fifa-world-cup-912"
+    },
+    "Netherlands": {
+      "yesPrice": "0.0395",
+      "noPrice": "0.9605",
+      "impliedProb": "4.0%",
+      "decimalOdds": "25.32",
+      "volume": "32523444",
+      "liquidity": "1753519",
+      "slug": "will-netherlands-win-the-2026-fifa-world-cup-739"
+    },
+    "USA": {
+      "yesPrice": "0.0115",
+      "noPrice": "0.9885",
+      "impliedProb": "1.1%",
+      "decimalOdds": "86.96",
+      "volume": "48403748",
+      "liquidity": "6664199",
+      "slug": "will-usa-win-the-2026-fifa-world-cup-467"
+    },
+    "Uruguay": {
+      "yesPrice": "0.0105",
+      "noPrice": "0.9895",
+      "impliedProb": "1.1%",
+      "decimalOdds": "95.24",
+      "volume": "32635200",
+      "liquidity": "8572978",
+      "slug": "will-uruguay-win-the-2026-fifa-world-cup-932"
+    },
+    "Mexico": {
+      "yesPrice": "0.0145",
+      "noPrice": "0.9855",
+      "impliedProb": "1.5%",
+      "decimalOdds": "68.97",
+      "volume": "38078325",
+      "liquidity": "1688997",
+      "slug": "will-mexico-win-the-2026-fifa-world-cup-529"
+    },
+    "Belgium": {
+      "yesPrice": "0.0215",
+      "noPrice": "0.9785",
+      "impliedProb": "2.1%",
+      "decimalOdds": "46.51",
+      "volume": "34027881",
+      "liquidity": "2267871",
+      "slug": "will-belgium-win-the-2026-fifa-world-cup-358"
+    },
+    "Colombia": {
+      "yesPrice": "0.0185",
+      "noPrice": "0.9815",
+      "impliedProb": "1.8%",
+      "decimalOdds": "54.05",
+      "volume": "33250260",
+      "liquidity": "4304641",
+      "slug": "will-colombia-win-the-2026-fifa-world-cup-734"
+    },
+    "Japan": {
+      "yesPrice": "0.0195",
+      "noPrice": "0.9805",
+      "impliedProb": "1.9%",
+      "decimalOdds": "51.28",
+      "volume": "35363377",
+      "liquidity": "477861",
+      "slug": "will-japan-win-the-2026-fifa-world-cup-112"
+    },
+    "Morocco": {
+      "yesPrice": "0.0185",
+      "noPrice": "0.9815",
+      "impliedProb": "1.8%",
+      "decimalOdds": "54.05",
+      "volume": "39450490",
+      "liquidity": "758479",
+      "slug": "will-morocco-win-the-2026-fifa-world-cup-464"
+    },
+    "Switzerland": {
+      "yesPrice": "0.0125",
+      "noPrice": "0.9875",
+      "impliedProb": "1.3%",
+      "decimalOdds": "80.00",
+      "volume": "32997626",
+      "liquidity": "1527470",
+      "slug": "will-switzerland-win-the-2026-fifa-world-cup"
+    },
+    "Croatia": {
+      "yesPrice": "0.0095",
+      "noPrice": "0.9905",
+      "impliedProb": "0.9%",
+      "decimalOdds": "105.26",
+      "volume": "40641998",
+      "liquidity": "1950116",
+      "slug": "will-croatia-win-the-2026-fifa-world-cup"
+    }
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-08T12:45:20.806Z",
+  "updatedAt": "2026-06-08T14:30:24.529Z",
   "source": "polymarket.com/sports/world-cup/games",
   "matchCount": 20,
   "odds": {
@@ -63,7 +63,7 @@
       "home": "Germany",
       "away": "Curaçao",
       "date": "2026-06-14T17:00:00.000Z",
-      "homePercent": "93.8",
+      "homePercent": "94.3",
       "drawPercent": "4.3",
       "awayPercent": "1.8"
     },
@@ -73,7 +73,7 @@
       "date": "2026-06-14T20:00:00.000Z",
       "homePercent": "48.5",
       "drawPercent": "26.5",
-      "awayPercent": "25.5"
+      "awayPercent": "24.5"
     },
     "/sports/world-cup/fifwc-civ-ecu-2026-06-14": {
       "home": "Côte d'Ivoire",
