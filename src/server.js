@@ -180,7 +180,7 @@ app.get('/health', (req, res) => {
 app.get('/proxy', (req, res) => {
   const targetUrl = req.query.url;
   if (!targetUrl) return res.status(400).send('Missing url');
-  if (!/^https?:\/\/.test(targetUrl)) return res.status(400).send('Invalid url');
+  if (!/^https?:\/\//.test(targetUrl)) return res.status(400).send('Invalid url');
 
   try {
     const parsed = new URL(targetUrl);
