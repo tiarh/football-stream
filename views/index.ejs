@@ -101,11 +101,11 @@
                   <span class="text-slate-400 text-sm">vs</span>
                   <span class="font-semibold group-hover:text-blue-400 transition-colors"><%= match.away_team %></span>
                 </div>
-                  <% if (homeOdds || awayOdds) { %>
-                  <div class="flex items-center justify-between text-xs pt-1 border-t border-slate-700/50">
-                    <span class="text-blue-300 font-mono"><%= homeOdds ? Math.round(parseFloat(homeOdds.yesPrice)*100) + '/100' : '—' %></span>
-                    <span class="text-slate-500 text-[10px]">Odds</span>
-                    <span class="text-orange-300 font-mono"><%= awayOdds ? Math.round(parseFloat(awayOdds.yesPrice)*100) + '/100' : '—' %></span>
+                  <% if (match.odds) { %>
+                  <div class="flex items-center justify-around text-xs pt-1.5 border-t border-slate-700/50">
+                    <span class="text-green-300 font-mono"><%= match.odds.homePercent %>%</span>
+                    <span class="text-slate-400 font-mono">Draw <%= match.odds.drawPercent %>%</span>
+                    <span class="text-red-300 font-mono"><%= match.odds.awayPercent %>%</span>
                   </div>
                 <% } %>
               </div>

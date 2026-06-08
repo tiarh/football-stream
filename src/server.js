@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const https = require('https');
 const Database = require('./services/database');
 const statsRouter = require('./routes/stats');
@@ -12,40 +13,37 @@ app.set('views', path.join(__dirname, '../views'));
 app.use(express.static(path.join(__dirname, '../public')));
 app.use(express.json());
 
-// Fetch WC 2026 winner odds from Polymarket
-function fetchPolyOdds() {
+// Load WC 2026 match odds from local cache (refreshed by cron)
+const ODDS_FILE = path.join(__dirname, '../data/poly-match-odds.json');
+let polyMatchOdds = {};
+
+try {
+  const raw = fs.readFileSync(ODDS_FILE, 'utf8');
+  const data = JSON.parse(raw);
+  for (const [slug, o] of Object.entries(data.odds || {})) {
+    const home = o.home, away = o.away;
+    if (home && away) {
+      // Key by both orderings for easy lookup
+      polyMatchOdds[`${home} vs ${away}`] = o;
+      polyMatchOdds[`${away} vs ${home}`] = o;
+    }
+  }
+  console.log(`📊 Loaded match odds for ${Object.keys(data.odds || {}).length} matches`);
+} catch (e) {
+  console.log('⚠️  No match odds cache found, run: node scripts/fetch-poly-match-odds.js');
+}
+
+// Refresh odds cache from Polymarket (call this periodically)
+async function refreshMatchOdds() {
+  const { spawn } = require('child_process');
   return new Promise((resolve) => {
-    const odds = {};
-    https.get('https://gamma-api.polymarket.com/markets?tagSlug=sports&limit=500&closed=false', (res) => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => {
-        try {
-          const markets = JSON.parse(data);
-          for (const m of markets) {
-            const q = m.question || '';
-            if (!q.includes('2026 FIFA World Cup') || !q.includes(' win ')) continue;
-            const team = q.replace('Will ', '').replace(' win the 2026 FIFA World Cup?', '').trim();
-            const prices = JSON.parse(m.outcomePrices || '[]');
-            if (prices.length < 2) continue;
-            const yesPrice = parseFloat(prices[0]);
-            odds[team] = {
-              yesPrice: yesPrice.toFixed(4),
-              decimalOdds: yesPrice > 0 ? (1 / yesPrice).toFixed(2) : null,
-              impliedProb: (yesPrice * 100).toFixed(1) + '%',
-              volume: m.volume,
-              slug: m.slug,
-            };
-          }
-        } catch (e) { console.error('Poly odds parse error:', e.message); }
-        resolve(odds);
-      });
-    }).on('error', () => resolve({}));
+    const child = spawn('node', [path.join(__dirname, '../scripts/fetch-poly-match-odds.js')], { detached: true });
+    child.on('close', resolve);
   });
 }
 
-// Home - Live + Upcoming + Odds
-app.get('/', async (req, res) => {
+// Home - Live + Upcoming + Match Odds
+app.get('/', (req, res) => {
   try {
     const now = new Date();
     const sevenDaysLater = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000));
@@ -61,15 +59,15 @@ app.get('/', async (req, res) => {
     upcomingMatches.forEach(match => {
       const streams = Database.getStreamsByMatchId(match.id);
       match.streams = streams;
+      // Attach Polymarket 3-way match odds
+      const key1 = `${match.home_team} vs ${match.away_team}`;
+      const key2 = `${match.away_team} vs ${match.home_team}`;
+      match.odds = polyMatchOdds[key1] || polyMatchOdds[key2] || null;
     });
-    
-    // Fetch Polymarket odds
-    const polyOdds = await fetchPolyOdds();
     
     res.render('index', {
       liveMatches,
       upcomingMatches,
-      polyOdds,
       pageTitle: 'Football Stream'
     });
   } catch (err) {
@@ -77,7 +75,6 @@ app.get('/', async (req, res) => {
     res.status(500).render('index', {
       liveMatches: [],
       upcomingMatches: [],
-      polyOdds: {},
       pageTitle: 'Football Stream',
       error: 'Failed to load matches'
     });
@@ -89,13 +86,8 @@ app.get('/match/:id', (req, res) => {
   try {
     const matchId = parseInt(req.params.id);
     const match = Database.getMatchById(matchId);
-    
-    if (!match) {
-      return res.status(404).send('Match not found');
-    }
-    
+    if (!match) return res.status(404).send('Match not found');
     const streams = Database.getStreamsByMatchId(matchId);
-    
     res.render('match', { match, streams });
   } catch (err) {
     console.error('Match detail error:', err);
@@ -110,7 +102,6 @@ app.post('/api/vote', (req, res) => {
     Database.voteStream(streamId, value);
     res.json({ success: true });
   } catch (err) {
-    console.error('Vote error:', err);
     res.status(500).json({ error: 'Failed to vote' });
   }
 });
@@ -122,49 +113,40 @@ app.post('/api/report', (req, res) => {
     Database.reportStream(streamId, reason);
     res.json({ success: true });
   } catch (err) {
-    console.error('Report error:', err);
     res.status(500).json({ error: 'Failed to report' });
   }
 });
 
-// API: Get WC 2026 winner odds from Polymarket
-const fs = require('fs');
-const ODDS_FILE = '/root/football-stream/data/poly-odds.json';
-
-app.get('/api/odds', (req, res) => {
+// API: Get WC 2026 match odds (from local cache, refreshed hourly)
+app.get('/api/odds/match', (req, res) => {
   try {
-    // Dynamic fetch from Polymarket to get live odds
-    const https = require('https');
-    https.get('https://gamma-api.polymarket.com/markets?tagSlug=sports&limit=300&closed=false', (apiRes) => {
-      let data = '';
-      apiRes.on('data', chunk => data += chunk);
-      apiRes.on('end', () => {
-        try {
-          const markets = JSON.parse(data);
-          const odds = {};
-          for (const m of markets) {
-            const q = m.question || '';
-            if (!q.includes('2026 FIFA World Cup') || !q.includes(' win ')) continue;
-            const team = q.replace('Will ','').replace(' win the 2026 FIFA World Cup?','');
-            const prices = JSON.parse(m.outcomePrices || '[]');
-            if (prices.length < 2) continue;
-            odds[team] = {
-              yesPrice: prices[0],
-              noPrice: prices[1],
-              decimalOdds: prices[0] > 0 ? (1/parseFloat(prices[0])).toFixed(2) : null,
-              impliedProb: (parseFloat(prices[0])*100).toFixed(1) + '%',
-              volume: m.volume,
-              slug: m.slug,
-            };
-          }
-          // Sort by probability
-          const sorted = Object.entries(odds).sort((a,b) => parseFloat(b[1].yesPrice) - parseFloat(a[1].yesPrice));
-          res.json({ updatedAt: new Date().toISOString(), source: 'polymarket', odds: Object.fromEntries(sorted) });
-        } catch {
-          res.status(500).json({ error: 'Failed to parse odds data' });
+    const raw = fs.readFileSync(ODDS_FILE, 'utf8');
+    const data = JSON.parse(raw);
+    res.json({ updatedAt: data.updatedAt, source: 'polymarket.com/sports/world-cup/games', matchCount: data.matchCount, odds: data.odds });
+  } catch (err) {
+    res.status(500).json({ error: 'No match odds available' });
+  }
+});
+
+// API: Force refresh odds from Polymarket
+app.get('/api/odds/refresh', async (req, res) => {
+  try {
+    await refreshMatchOdds();
+    // Reload cache
+    try {
+      const raw = fs.readFileSync(ODDS_FILE, 'utf8');
+      const data = JSON.parse(raw);
+      const newOdds = {};
+      for (const [slug, o] of Object.entries(data.odds || {})) {
+        const home = o.home, away = o.away;
+        if (home && away) {
+          newOdds[`${home} vs ${away}`] = o;
+          newOdds[`${away} vs ${home}`] = o;
         }
-      });
-    }).on('error', () => res.status(500).json({ error: 'Failed to fetch from Polymarket' }));
+      }
+      polyMatchOdds = newOdds;
+    } catch (e) { /* ignore */ }
+    res.json({ success: true, message: 'Odds refreshed' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -173,9 +155,7 @@ app.get('/api/odds', (req, res) => {
 // Stats dashboard
 app.use('/stats', statsRouter);
 
-// Health check
-
-// Redirect routes for convenience
+// Redirects
 app.get('/live', (req, res) => res.redirect('/#live-now'));
 app.get('/upcoming', (req, res) => res.redirect('/#next-7-days'));
 app.get('/next', (req, res) => res.redirect('/#next-7-days'));

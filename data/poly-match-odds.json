@@ -1,0 +1,167 @@
+{
+  "updatedAt": "2026-06-08T12:45:20.806Z",
+  "source": "polymarket.com/sports/world-cup/games",
+  "matchCount": 20,
+  "odds": {
+    "/sports/world-cup/fifwc-mex-rsa-2026-06-11": {
+      "home": "Mexico",
+      "away": "South Africa",
+      "date": "2026-06-11T19:00:00.000Z",
+      "homePercent": "68.5",
+      "drawPercent": "20.5",
+      "awayPercent": "10.5"
+    },
+    "/sports/world-cup/fifwc-kr-cze-2026-06-11": {
+      "home": "Korea Republic",
+      "away": "Czechia",
+      "date": "2026-06-12T02:00:00.000Z",
+      "homePercent": "36.5",
+      "drawPercent": "31.5",
+      "awayPercent": "33.5"
+    },
+    "/sports/world-cup/fifwc-usa-par-2026-06-12": {
+      "home": "United States",
+      "away": "Paraguay",
+      "date": "2026-06-13T01:00:00.000Z",
+      "homePercent": "49.5",
+      "drawPercent": "28.5",
+      "awayPercent": "23.5"
+    },
+    "/sports/world-cup/fifwc-qat-che-2026-06-13": {
+      "home": "Qatar",
+      "away": "Switzerland",
+      "date": "2026-06-13T19:00:00.000Z",
+      "homePercent": "6.9",
+      "drawPercent": "13.5",
+      "awayPercent": "79.5"
+    },
+    "/sports/world-cup/fifwc-bra-mar-2026-06-13": {
+      "home": "Brazil",
+      "away": "Morocco",
+      "date": "2026-06-13T22:00:00.000Z",
+      "homePercent": "58.5",
+      "drawPercent": "24.5",
+      "awayPercent": "17.5"
+    },
+    "/sports/world-cup/fifwc-hai-sco-2026-06-13": {
+      "home": "Haiti",
+      "away": "Scotland",
+      "date": "2026-06-14T01:00:00.000Z",
+      "homePercent": "14.5",
+      "drawPercent": "21.5",
+      "awayPercent": "65.5"
+    },
+    "/sports/world-cup/fifwc-aus-tur-2026-06-14": {
+      "home": "Australia",
+      "away": "Türkiye",
+      "date": "2026-06-14T04:00:00.000Z",
+      "homePercent": "18.5",
+      "drawPercent": "26.5",
+      "awayPercent": "55.5"
+    },
+    "/sports/world-cup/fifwc-ger-kor-2026-06-14": {
+      "home": "Germany",
+      "away": "Curaçao",
+      "date": "2026-06-14T17:00:00.000Z",
+      "homePercent": "93.8",
+      "drawPercent": "4.3",
+      "awayPercent": "1.8"
+    },
+    "/sports/world-cup/fifwc-nld-jpn-2026-06-14": {
+      "home": "Netherlands",
+      "away": "Japan",
+      "date": "2026-06-14T20:00:00.000Z",
+      "homePercent": "48.5",
+      "drawPercent": "26.5",
+      "awayPercent": "25.5"
+    },
+    "/sports/world-cup/fifwc-civ-ecu-2026-06-14": {
+      "home": "Côte d'Ivoire",
+      "away": "Ecuador",
+      "date": "2026-06-14T23:00:00.000Z",
+      "homePercent": "26.5",
+      "drawPercent": "33.5",
+      "awayPercent": "39.5"
+    },
+    "/sports/world-cup/fifwc-swe-tun-2026-06-14": {
+      "home": "Sweden",
+      "away": "Tunisia",
+      "date": "2026-06-15T02:00:00.000Z",
+      "homePercent": "50.5",
+      "drawPercent": "28.5",
+      "awayPercent": "22.5"
+    },
+    "/sports/world-cup/fifwc-esp-cvi-2026-06-15": {
+      "home": "Spain",
+      "away": "Cabo Verde",
+      "date": "2026-06-15T16:00:00.000Z",
+      "homePercent": "90.5",
+      "drawPercent": "7.1",
+      "awayPercent": "3.3"
+    },
+    "/sports/world-cup/fifwc-bel-egy-2026-06-15": {
+      "home": "Belgium",
+      "away": "Egypt",
+      "date": "2026-06-15T19:00:00.000Z",
+      "homePercent": "58.5",
+      "drawPercent": "24.5",
+      "awayPercent": "16.5"
+    },
+    "/sports/world-cup/fifwc-ksa-ury-2026-06-15": {
+      "home": "Saudi Arabia",
+      "away": "Uruguay",
+      "date": "2026-06-15T22:00:00.000Z",
+      "homePercent": "12.5",
+      "drawPercent": "21.5",
+      "awayPercent": "66.5"
+    },
+    "/sports/world-cup/fifwc-irn-nzl-2026-06-15": {
+      "home": "IR Iran",
+      "away": "New Zealand",
+      "date": "2026-06-16T01:00:00.000Z",
+      "homePercent": "50.5",
+      "drawPercent": "28.5",
+      "awayPercent": "21.5"
+    },
+    "/sports/world-cup/fifwc-fra-sen-2026-06-16": {
+      "home": "France",
+      "away": "Senegal",
+      "date": "2026-06-16T19:00:00.000Z",
+      "homePercent": "67.5",
+      "drawPercent": "20.5",
+      "awayPercent": "12.5"
+    },
+    "/sports/world-cup/fifwc-irq-nor-2026-06-16": {
+      "home": "Iraq",
+      "away": "Norway",
+      "date": "2026-06-16T22:00:00.000Z",
+      "homePercent": "6.5",
+      "drawPercent": "13.5",
+      "awayPercent": "80.5"
+    },
+    "/sports/world-cup/fifwc-arg-alg-2026-06-16": {
+      "home": "Argentina",
+      "away": "Algeria",
+      "date": "2026-06-17T01:00:00.000Z",
+      "homePercent": "69.5",
+      "drawPercent": "20.5",
+      "awayPercent": "10.5"
+    },
+    "/sports/world-cup/fifwc-aut-jor-2026-06-17": {
+      "home": "Austria",
+      "away": "Jordan",
+      "date": "2026-06-17T04:00:00.000Z",
+      "homePercent": "73.5",
+      "drawPercent": "16.5",
+      "awayPercent": "9.5"
+    },
+    "/sports/world-cup/fifwc-prt-cdr-2026-06-17": {
+      "home": "Portugal",
+      "away": "DR Congo",
+      "date": "2026-06-17T17:00:00.000Z",
+      "homePercent": "76.5",
+      "drawPercent": "16.5",
+      "awayPercent": "7.5"
+    }
+  }
+}
