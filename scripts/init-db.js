@@ -27,10 +27,10 @@ const sampleMatches = [
   { home: 'RB Leipzig', away: 'Bayer Leverkusen', league: 'Bundesliga', date: '2026-06-14 14:30', stadium: 'Red Bull Arena' },
   
   // World Cup 2026 (June-July)
-  { home: 'Brazil', away: 'Argentina', league: 'World Cup', date: '2026-06-20 20:00', stadium: 'MetLife Stadium' },
-  { home: 'France', away: 'Germany', league: 'World Cup', date: '2026-06-21 20:00', stadium: 'AT&T Stadium' },
-  { home: 'Spain', away: 'England', league: 'World Cup', date: '2026-06-22 17:00', stadium: 'Mercedes-Benz Stadium' },
-  { home: 'Italy', away: 'Netherlands', league: 'World Cup', date: '2026-06-22 20:00', stadium: 'SoFi Stadium' },
+  { home: 'Brazil', away: 'Argentina', league: 'World Cup 2026', date: '2026-06-20 20:00', stadium: 'MetLife Stadium' },
+  { home: 'France', away: 'Germany', league: 'World Cup 2026', date: '2026-06-21 20:00', stadium: 'AT&T Stadium' },
+  { home: 'Spain', away: 'England', league: 'World Cup 2026', date: '2026-06-22 17:00', stadium: 'Mercedes-Benz Stadium' },
+  { home: 'Italy', away: 'Netherlands', league: 'World Cup 2026', date: '2026-06-22 20:00', stadium: 'SoFi Stadium' },
 ];
 
 // Sample stream sources (aggregator pattern - links would be scraped/added)

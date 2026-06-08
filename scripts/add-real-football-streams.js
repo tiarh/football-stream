@@ -26,10 +26,10 @@ const footballStreams = {
     { name: 'Bundesliga Official', url: 'https://www.bundesliga.com/en/bundesliga/live', quality: 'FHD', lang: 'DE', type: 'link', note: 'Official Bundesliga streams' },
     { name: 'Bayern Munich TV', url: 'https://fcbayern.com/en/video', quality: 'HD', lang: 'DE', type: 'link', note: 'Official club content' },
   ],
-  'World Cup': [
-    { name: 'FIFA+ Official', url: 'https://plus.fifa.com/', quality: 'FHD', lang: 'EN', type: 'link', note: 'FREE World Cup archive + live' },
+  'World Cup 2026': [
+    { name: 'FIFA+ Official', url: 'https://plus.fifa.com/', quality: 'FHD', lang: 'EN', type: 'link', note: 'FREE WC 2026 archive + live' },
     { name: 'beIN Sports', url: 'https://www.beinsports.com/', quality: 'FHD', lang: 'EN', type: 'link', note: 'Official broadcaster' },
-    { name: 'OneFootball', url: 'https://onefootball.com/', quality: 'HD', lang: 'EN', type: 'link', note: 'Free World Cup streams' },
+    { name: 'OneFootball', url: 'https://onefootball.com/', quality: 'HD', lang: 'EN', type: 'link', note: 'Free WC 2026 streams' },
   ],
 };
 
@@ -76,7 +76,7 @@ try {
   console.log(`\n✅ Updated ${updatedCount} streams with REAL football sources!`);
   console.log('\n📺 Sources include:');
   console.log('   - UEFA.tv (official UCL)');
-  console.log('   - FIFA+ (free World Cup)');
+  console.log('   - FIFA+ (free WC 2026)');
   console.log('   - OneFootball (free live matches)');
   console.log('   - LaLiga+ (official La Liga)');
   console.log('   - Bundesliga Official');

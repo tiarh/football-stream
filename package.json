@@ -1,7 +1,7 @@
 {
   "name": "football-stream",
   "version": "1.0.0",
-  "description": "Free football streaming aggregator - UCL, World Cup, Premier League & more",
+  "description": "Free football streaming aggregator - UCL, WC 2026, Premier League & more",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",

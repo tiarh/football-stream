@@ -21,7 +21,7 @@ const iptvStreams = {
   'Bundesliga': [
     { name: 'Bundesliga Official', url: 'https://www.youtube.com/embed/live_stream?channel=UCYiGK8hGLxqHn9uGjFk3p7g', quality: 'HD', lang: 'DE', type: 'embed' },
   ],
-  'World Cup': [
+  'World Cup 2026': [
     { name: 'FIFA TV', url: 'https://www.youtube.com/embed/live_stream?channel=UCYiGK8hGLxqHn9uGjFk3p7g', quality: 'FHD', lang: 'EN', type: 'embed' },
     { name: 'beIN Sports', url: 'https://www.youtube.com/embed/live_stream?channel=UCYiGK8hGLxqHn9uGjFk3p7g', quality: 'FHD', lang: 'EN', type: 'embed' },
   ],

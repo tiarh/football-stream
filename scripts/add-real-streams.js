@@ -29,7 +29,7 @@ const streamingSites = {
     { name: 'Stream2Watch', url: 'https://stream2watch.ws/sports/football/bundesliga', quality: 'HD', lang: 'EN' },
     { name: 'VIPBox', url: 'https://vipboxtv.sk/football/bundesliga-live', quality: 'SD', lang: 'EN' },
   ],
-  'World Cup': [
+  'World Cup 2026': [
     { name: 'Cricfree', url: 'https://cricfree.to/watch/world-cup', quality: 'FHD', lang: 'EN' },
     { name: 'Stream2Watch', url: 'https://stream2watch.ws/sports/football/world-cup', quality: 'FHD', lang: 'EN' },
     { name: 'VIPBox', url: 'https://vipboxtv.sk/football/world-cup-live', quality: 'HD', lang: 'EN' },
