@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const https = require('https');
 const Database = require('./services/database');
 const statsRouter = require('./routes/stats');
 
@@ -11,31 +12,64 @@ app.set('views', path.join(__dirname, '../views'));
 app.use(express.static(path.join(__dirname, '../public')));
 app.use(express.json());
 
-// Home - Live + Upcoming
-app.get('/', (req, res) => {
+// Fetch WC 2026 winner odds from Polymarket
+function fetchPolyOdds() {
+  return new Promise((resolve) => {
+    const odds = {};
+    https.get('https://gamma-api.polymarket.com/markets?tagSlug=sports&limit=500&closed=false', (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try {
+          const markets = JSON.parse(data);
+          for (const m of markets) {
+            const q = m.question || '';
+            if (!q.includes('2026 FIFA World Cup') || !q.includes(' win ')) continue;
+            const team = q.replace('Will ', '').replace(' win the 2026 FIFA World Cup?', '').trim();
+            const prices = JSON.parse(m.outcomePrices || '[]');
+            if (prices.length < 2) continue;
+            const yesPrice = parseFloat(prices[0]);
+            odds[team] = {
+              yesPrice: yesPrice.toFixed(4),
+              decimalOdds: yesPrice > 0 ? (1 / yesPrice).toFixed(2) : null,
+              impliedProb: (yesPrice * 100).toFixed(1) + '%',
+              volume: m.volume,
+              slug: m.slug,
+            };
+          }
+        } catch (e) { console.error('Poly odds parse error:', e.message); }
+        resolve(odds);
+      });
+    }).on('error', () => resolve({}));
+  });
+}
+
+// Home - Live + Upcoming + Odds
+app.get('/', async (req, res) => {
   try {
     const now = new Date();
     const sevenDaysLater = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000));
     
-    // Get LIVE matches (status = 'live')
     const liveMatches = Database.getLiveMatches();
     
-    // Get upcoming matches (next 7 days, not live)
     const allUpcoming = Database.getUpcomingMatches();
     const upcomingMatches = allUpcoming.filter(m => {
       const matchDate = new Date(m.match_date);
       return matchDate > now && matchDate <= sevenDaysLater && m.status !== 'live';
     });
     
-    // Check streams for each upcoming match
     upcomingMatches.forEach(match => {
       const streams = Database.getStreamsByMatchId(match.id);
       match.streams = streams;
     });
     
+    // Fetch Polymarket odds
+    const polyOdds = await fetchPolyOdds();
+    
     res.render('index', {
       liveMatches,
       upcomingMatches,
+      polyOdds,
       pageTitle: 'Football Stream'
     });
   } catch (err) {
@@ -43,6 +77,7 @@ app.get('/', (req, res) => {
     res.status(500).render('index', {
       liveMatches: [],
       upcomingMatches: [],
+      polyOdds: {},
       pageTitle: 'Football Stream',
       error: 'Failed to load matches'
     });

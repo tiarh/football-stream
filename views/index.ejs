@@ -81,6 +81,8 @@
       <% if (upcomingMatches && upcomingMatches.length > 0) { %>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <% upcomingMatches.forEach(match => { %>
+            <% const homeOdds = polyOdds[match.home_team]; %>
+            <% const awayOdds = polyOdds[match.away_team]; %>
             <a href="/match/<%= match.id %>" class="match-card block bg-slate-800 rounded-xl p-4 border border-slate-700 hover:border-blue-500 transition-all group">
               <div class="flex items-center justify-between mb-2">
                 <span class="text-xs text-blue-400 font-medium"><%= match.league %></span>
@@ -99,6 +101,13 @@
                   <span class="text-slate-400 text-sm">vs</span>
                   <span class="font-semibold group-hover:text-blue-400 transition-colors"><%= match.away_team %></span>
                 </div>
+                <% if (homeOdds || awayOdds) { %>
+                  <div class="flex items-center justify-between text-xs">
+                    <span class="text-blue-300 font-mono"><%= homeOdds ? homeOdds.impliedProb : '—' %></span>
+                    <span class="text-slate-500 text-[10px]">WC Winner Prob</span>
+                    <span class="text-orange-300 font-mono"><%= awayOdds ? awayOdds.impliedProb : '—' %></span>
+                  </div>
+                <% } %>
               </div>
               <div class="mt-3 flex items-center justify-between">
                 <span class="text-xs text-slate-400">
