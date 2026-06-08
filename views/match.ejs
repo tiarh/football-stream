@@ -1,186 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= match.home_team %> vs <%= match.away_team %> - Football Stream</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Inter', sans-serif; }
-    .gradient-bg { background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); }
-    .live-pulse { animation: pulse 2s infinite; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
-    .video-container { position:relative; padding-bottom:56.25%; height:0; overflow:hidden; background:#000; border-radius:12px; }
-    .video-container iframe, .video-container video { position:absolute; top:0; left:0; width:100%; height:100%; }
-    .stream-card.active { border-color:#22c55e; background:rgba(34,197,94,0.1); }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title><%= match.home_team %> vs <%= match.away_team %> - Football Stream</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>body{font-family:'Inter',sans-serif}.gradient-bg{background:linear-gradient(135deg,#1e3a5f 0%,#0f172a 100%)}.live-pulse{animation:pulse 2s infinite}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}.video-container{position:relative;padding-bottom:56.25%;height:0;overflow:hidden;background:#000;border-radius:12px}.video-container iframe,.video-container video{position:absolute;top:0;left:0;width:100%;height:100%}.stream-card.active{border-color:#22c55e;background:rgba(34,197,94,0.1)}</style>
 </head>
 <body class="gradient-bg min-h-screen text-white">
-
-<!-- Header -->
 <header class="bg-slate-900/80 backdrop-blur-sm border-b border-slate-700 sticky top-0 z-50">
-  <div class="max-w-6xl mx-auto px-4 py-4">
-    <a href="/" class="text-slate-400 hover:text-white text-sm flex items-center gap-2 mb-3">← Back to Matches</a>
-    <div class="flex items-center justify-between">
-      <div>
-        <span class="text-xs text-slate-400"><%= match.league %></span>
-        <h1 class="text-2xl font-bold mt-1"><%= match.home_team %> vs <%= match.away_team %></h1>
-      </div>
-      <% if (match.status === 'live') { %>
-        <span class="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium live-pulse">🔴 LIVE</span>
-      <% } %>
-    </div>
-  </div>
-</header>
-
+<div class="max-w-6xl mx-auto px-4 py-4">
+<a href="/" class="text-slate-400 hover:text-white text-sm flex items-center gap-2 mb-3">← Back to Matches</a>
+<div class="flex items-center justify-between">
+<div><span class="text-xs text-slate-400"><%= match.league %></span><h1 class="text-2xl font-bold mt-1"><%= match.home_team %> vs <%= match.away_team %></h1></div>
+<% if(match.status==='live'){ %><span class="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium live-pulse">🔴 LIVE</span><% } %>
+</div></div></header>
 <main class="max-w-6xl mx-auto px-4 py-8">
-
-<!-- Video Player -->
-<div class="mb-8">
-  <div class="bg-slate-800 rounded-xl p-4 border border-slate-700">
-    <div id="player-container" class="video-container">
-      <div class="flex items-center justify-center h-full text-slate-400">
-        <div class="text-center">
-          <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"/></svg>
-          <p>Select a stream below to start watching</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Match Info -->
+<div class="mb-8"><div class="bg-slate-800 rounded-xl p-4 border border-slate-700">
+<div id="player-container" class="video-container">
+<div class="flex items-center justify-center h-full text-slate-400"><div class="text-center">
+<svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"/></svg>
+<p>Select a stream below to start watching</p>
+</div></div></div></div></div>
 <div class="bg-slate-800 rounded-xl p-6 mb-6 border border-slate-700">
-  <div class="flex items-center justify-between mb-4">
-    <div class="text-center flex-1">
-      <div class="w-16 h-16 bg-slate-700 rounded-full mx-auto mb-2 flex items-center justify-center text-2xl">🏠</div>
-      <p class="font-bold text-lg"><%= match.home_team %></p>
-    </div>
-    <div class="px-6">
-      <div class="text-3xl font-bold text-slate-500">VS</div>
-      <p class="text-xs text-slate-400 mt-2 text-center"><%= new Date(match.match_date).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' }) %></p>
-    </div>
-    <div class="text-center flex-1">
-      <div class="w-16 h-16 bg-slate-700 rounded-full mx-auto mb-2 flex items-center justify-center text-2xl">✈️</div>
-      <p class="font-bold text-lg"><%= match.away_team %></p>
-    </div>
-  </div>
-  <% if (match.stadium) { %><p class="text-center text-sm text-slate-400">📍 <%= match.stadium %></p><% } %>
+<div class="flex items-center justify-between mb-4">
+<div class="text-center flex-1"><div class="w-16 h-16 bg-slate-700 rounded-full mx-auto mb-2 flex items-center justify-center text-2xl">🏠</div><p class="font-bold text-lg"><%= match.home_team %></p></div>
+<div class="px-6"><div class="text-3xl font-bold text-slate-500">VS</div><p class="text-xs text-slate-400 mt-2 text-center"><%= new Date(match.match_date).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) %></p></div>
+<div class="text-center flex-1"><div class="w-16 h-16 bg-slate-700 rounded-full mx-auto mb-2 flex items-center justify-center text-2xl">✈️</div><p class="font-bold text-lg"><%= match.away_team %></p></div>
 </div>
-
-<!-- Streams -->
+<% if(match.stadium){ %><p class="text-center text-sm text-slate-400">📍 <%= match.stadium %></p><% } %>
+</div>
 <section>
-  <h2 class="text-xl font-bold mb-4">Verified Broadcast Channels (<%= streams.length %>)</h2>
-
-  <% if (streams.length === 0) { %>
-    <div class="bg-slate-800/50 rounded-xl p-8 text-center text-slate-400 border border-slate-700">
-      <p class="text-lg mb-2">No streams available yet</p>
-      <p class="text-sm">Streams added H-4 hours before kickoff</p>
-    </div>
-  <% } else { %>
-    <div class="grid md:grid-cols-2 gap-4">
-      <% streams.forEach(function(stream) { %>
-        <div class="stream-card bg-slate-800 rounded-xl p-4 border border-slate-700 hover:border-green-500 transition-all cursor-pointer"
-             data-url="<%= stream.stream_url %>"
-             data-type="<%= (stream.type === 'hls' || (stream.stream_url && stream.stream_url.includes('.m3u8'))) ? 'hls' : (stream.type === 'link' ? 'link' : 'embed') %>"
-             onclick="loadStream(this)">
-
-          <div class="flex items-center justify-between mb-2">
-            <div class="flex items-center gap-2">
-              <span class="bg-green-500/20 text-green-400 px-2 py-0.5 rounded text-xs font-bold uppercase">Verified</span>
-              <span class="bg-slate-700 text-white px-2 py-0.5 rounded text-xs font-medium"><%= stream.quality || '1080p' %></span>
-              <span class="text-slate-500 text-xs"><%= stream.language || 'ENG' %></span>
-            </div>
-            <span class="text-green-400 text-sm font-bold">▶ Play</span>
-          </div>
-
-          <div class="mb-1">
-            <span class="text-white font-semibold text-sm"><%= stream.source_name || stream.name %></span>
-            <% if (stream.note) { %><span class="text-slate-500 text-xs ml-1">- <%= stream.note %></span><% } %>
-          </div>
-
-          <div class="flex items-center gap-2 text-xs mb-2">
-            <% const isHls = stream.type === 'hls' || (stream.stream_url && stream.stream_url.includes('.m3u8')); %>
-            <% if (isHls) { %>
-              <span class="text-blue-400 font-medium">Direct HLS Stream</span>
-            <% } else if (stream.type === 'link') { %>
-              <span class="text-orange-400 font-medium">Official Website</span>
-            <% } else { %>
-              <span class="text-purple-400 font-medium">Embedded Player</span>
-            <% } %>
-            <span class="text-slate-600">|</span>
-            <span class="text-slate-500"><%= (stream.votes_positive || 1) %> working</span>
-          </div>
-
-          <div class="flex gap-2 mt-2">
-            <button onclick="event.stopPropagation(); vote(<%= stream.id %>, 'positive')" class="flex-1 bg-slate-700 hover:bg-green-500/20 text-slate-300 hover:text-green-400 py-1.5 rounded-lg text-xs transition-colors">👍 Works</button>
-            <button onclick="event.stopPropagation(); vote(<%= stream.id %>, 'negative')" class="flex-1 bg-slate-700 hover:bg-red-500/20 text-slate-300 hover:text-red-400 py-1.5 rounded-lg text-xs transition-colors">👎 Broken</button>
-            <button onclick="event.stopPropagation(); report(<%= stream.id %>)" class="px-3 bg-slate-700 hover:bg-red-500/20 text-slate-300 hover:text-red-400 py-1.5 rounded-lg text-xs transition-colors" title="Report">⚠️</button>
-          </div>
-        </div>
-      <% }); %>
-    </div>
-  <% } %>
+<h2 class="text-xl font-bold mb-4">Verified Broadcast Channels (<%= streams.length %>)</h2>
+<% if(streams.length===0){ %>
+<div class="bg-slate-800/50 rounded-xl p-8 text-center text-slate-400 border border-slate-700"><p class="text-lg mb-2">No streams available yet</p><p class="text-sm">Streams added H-4 hours before kickoff</p></div>
+<% }else{ %>
+<div class="grid md:grid-cols-2 gap-4">
+<% streams.forEach(function(stream){ %>
+<div class="stream-card bg-slate-800 rounded-xl p-4 border border-slate-700 hover:border-green-500 transition-all cursor-pointer" data-url="<%= stream.stream_url %>" data-type="<%= (stream.type==='hls'||String(stream.stream_url).includes('.m3u8'))?'hls':(stream.type==='link'?'link':'embed') %>" onclick="loadStream(this)">
+<div class="flex items-center justify-between mb-2"><div class="flex items-center gap-2"><span class="bg-green-500/20 text-green-400 px-2 py-0.5 rounded text-xs font-bold uppercase">Verified</span><span class="bg-slate-700 text-white px-2 py-0.5 rounded text-xs font-medium"><%= stream.quality||'1080p' %></span><span class="text-slate-500 text-xs"><%= stream.language||'ENG' %></span></div><span class="text-green-400 text-sm font-bold">▶ Play</span></div>
+<div class="mb-1"><span class="text-white font-semibold text-sm"><%= stream.source_name||stream.name %></span><% if(stream.note){ %><span class="text-slate-500 text-xs ml-1">- <%= stream.note %></span><% } %></div>
+<div class="flex items-center gap-2 text-xs mb-2"><% const isHls=stream.type==='hls'||String(stream.stream_url).includes('.m3u8'); %><% if(isHls){ %><span class="text-blue-400 font-medium">Direct HLS Stream</span><% }else if(stream.type==='link'){ %><span class="text-orange-400 font-medium">Official Website</span><% }else{ %><span class="text-purple-400 font-medium">Embedded Player</span><% } %><span class="text-slate-600">|</span><span class="text-slate-500"><%= stream.votes_positive||1 %> working</span></div>
+<div class="flex gap-2 mt-2"><button onclick="event.stopPropagation();vote(<%= stream.id %>,'positive')" class="flex-1 bg-slate-700 hover:bg-green-500/20 text-slate-300 hover:text-green-400 py-1.5 rounded-lg text-xs transition-colors">👍 Works</button><button onclick="event.stopPropagation();vote(<%= stream.id %>,'negative')" class="flex-1 bg-slate-700 hover:bg-red-500/20 text-slate-300 hover:text-red-400 py-1.5 rounded-lg text-xs transition-colors">👎 Broken</button><button onclick="event.stopPropagation();report(<%= stream.id %>)" class="px-3 bg-slate-700 hover:bg-red-500/20 text-slate-300 hover:text-red-400 py-1.5 rounded-lg text-xs transition-colors" title="Report">⚠️</button></div>
+</div><% }); %>
+</div><% } %>
 </section>
-
-<!-- Channel Info -->
-<% if (streams.length > 0) { %>
-<section class="mt-8 bg-slate-800/60 rounded-xl p-4 border border-slate-700">
-  <h3 class="text-sm font-semibold text-slate-300 mb-2">📡 About These Channels</h3>
-  <p class="text-xs text-slate-400 leading-relaxed">
-    Channels listed are <strong class="text-white">verified real broadcasters</strong> from IPTV-org open-source index.
-    <strong class="text-green-400">Alkass (Qatar)</strong> holds MENA rights for FIFA World Cup 2026.
-    <strong class="text-blue-400">Africa 24</strong> covers sub-Saharan matches.
-    Some streams may require VPN depending on region. Vote 👍 if working, 👎 if broken.
-  </p>
-</section>
+<% if(streams.length>0){ %>
+<section class="mt-8 bg-slate-800/60 rounded-xl p-4 border border-slate-700"><h3 class="text-sm font-semibold text-slate-300 mb-2">📡 About These Channels</h3><p class="text-xs text-slate-400 leading-relaxed">Channels listed are <strong class="text-white">verified real broadcasters</strong> from IPTV-org open-source index.<strong class="text-green-400">Alkass (Qatar)</strong> holds MENA rights for FIFA World Cup 2026.<strong class="text-blue-400">Africa 24</strong> covers sub-Saharan matches. Some streams may require VPN depending on region. Vote 👍 if working, 👎 if broken.</p></section>
 <% } %>
-
 </main>
-
-<!-- Footer -->
-<footer class="border-t border-slate-700/50 bg-slate-900/50 mt-12">
-  <div class="max-w-6xl mx-auto px-4 py-6 text-center text-slate-400 text-xs">
-    <p>⚽ Football Stream — Real channels, real fixtures, real odds.</p>
-    <p class="mt-1 text-slate-500">Odds via Polymarket · Streams via IPTV-org · Data via Open Football</p>
-  </div>
-</footer>
-
+<footer class="border-t border-slate-700/50 bg-slate-900/50 mt-12"><div class="max-w-6xl mx-auto px-4 py-6 text-center text-slate-400 text-xs"><p>⚽ Football Stream — Real channels, real fixtures, real odds.</p><p class="mt-1 text-slate-500">Odds via Polymarket · Streams via IPTV-org · Data via Open Football</p></div></footer>
 <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
 <script>
-let player = null;
-
-function loadStream(el) {
-  const url = el.dataset.url;
-  const type = el.dataset.type;
-  document.querySelectorAll('.stream-card').forEach(c => c.classList.remove('active'));
+let player=null;
+function loadStream(el){
+  let url=el.dataset.url;
+  const type=el.dataset.type;
+  document.querySelectorAll('.stream-card').forEach(c=>c.classList.remove('active'));
   el.classList.add('active');
-
-  const container = document.getElementById('player-container');
-
-  if (type === 'link') {
-    window.open(url, '_blank');
-    container.innerHTML = '<div class="flex items-center justify-center h-full text-green-400"><p>Opening in new tab...</p></div>';
-  } else if (type === 'hls') {
-    container.innerHTML = '<video id="video-player" class="video-js vjs-default-skin vjs-big-play-centered" controls preload="auto" style="width:100%;height:100%"></video>';
-    if (player) player.dispose();
-    player = videojs('video-player', { sources: [{ src:url, type:'application/x-mpegURL' }], autoplay:true });
-  } else {
-    container.innerHTML = '<iframe src="'+url+'" frameborder="0" allowfullscreen allow="autoplay; encrypted-media" style="width:100%;height:100%"></iframe>';
-  }
-  container.scrollIntoView({ behavior:'smooth', block:'center' });
+  const container=document.getElementById('player-container');
+  if(!url.startsWith('/proxy')&&(url.startsWith('http')||url.includes('.m3u8'))){url='/proxy?url='+encodeURIComponent(url);}
+  if(type==='link'){window.open(url.replace('/proxy?url=',''),'_blank');container.innerHTML='<div class="flex items-center justify-center h-full text-green-400"><p>Opening in new tab...</p></div>';}
+  else if(type==='hls'){container.innerHTML='<video id="video-player" class="video-js vjs-default-skin vjs-big-play-centered" controls preload="auto" style="width:100%;height:100%"></video>';if(player)player.dispose();player=videojs('video-player',{sources:[{src:url,type:'application/x-mpegURL'}],autoplay:true});}
+  else{container.innerHTML='<iframe src="'+url+'" frameborder="0" allowfullscreen allow="autoplay; encrypted-media" style="width:100%;height:100%"></iframe>';}
+  container.scrollIntoView({behavior:'smooth',block:'center'});
 }
-
-async function vote(id, type) {
-  try { const r = await fetch('/api/vote', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({streamId:id, voteType:type}) }); if (r.ok) location.reload(); } catch(e) {}
-}
-async function report(id) {
-  if (!confirm('Report as broken?')) return;
-  try { const r = await fetch('/api/report', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({streamId:id}) }); if (r.ok) location.reload(); } catch(e) {}
-}
+async function vote(id,type){try{const r=await fetch('/api/vote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({streamId:id,voteType:type})});if(r.ok)location.reload();}catch(e){}}
+async function report(id){if(!confirm('Report as broken?'))return;try{const r=await fetch('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({streamId:id})});if(r.ok)location.reload();}catch(e){}}
 </script>
-
 </body>
 </html>
