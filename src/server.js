@@ -108,6 +108,12 @@ app.get('/api/matches', (req, res) => {
 app.use('/stats', statsRouter);
 
 // Health check
+
+// Redirect routes for convenience
+app.get('/live', (req, res) => res.redirect('/#live-now'));
+app.get('/upcoming', (req, res) => res.redirect('/#next-7-days'));
+app.get('/next', (req, res) => res.redirect('/#next-7-days'));
+
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
