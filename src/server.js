@@ -21,6 +21,7 @@ const TEAM_ALIAS = {
 };
 
 // Build match odds lookup (keyed by both orderings)
+const ODDS_FILE = '/root/football-stream/data/poly-match-odds.json';
 const polyMatchOdds = {};
 try {
   const raw = fs.readFileSync(ODDS_FILE, 'utf8');
